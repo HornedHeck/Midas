@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.koin.compiler)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.androidLint)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -25,6 +26,7 @@ kotlin {
         }
     }
 
+    jvm()
     // Source set declarations.
     // Declaring a target automatically creates a source set with the same name. By default, the
     // Kotlin Gradle Plugin creates additional source sets that depend on each other, since it is
@@ -56,6 +58,13 @@ kotlin {
                 // Add Android-specific dependencies here. Note that this source set depends on
                 // commonMain by default and will correctly pull the Android artifacts of any KMP
                 // dependencies declared in commonMain.
+                implementation(libs.sqldelight.android.driver)
+            }
+        }
+
+        jvmMain {
+            dependencies {
+                implementation(libs.sqldelight.sqlite.driver)
             }
         }
 
@@ -67,5 +76,12 @@ kotlin {
             }
         }
     }
+}
 
+sqldelight {
+    databases {
+        register("Database"){
+            packageName = "com.hornedheck.midas.db"
+        }
+    }
 }

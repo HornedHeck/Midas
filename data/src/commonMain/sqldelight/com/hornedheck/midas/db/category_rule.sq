@@ -1,0 +1,19 @@
+import com.hornedheck.midas.data.db.model.RuleField;
+import com.hornedheck.midas.data.db.model.MatchType;
+
+CREATE TABLE category_rule (
+    id          TEXT    PRIMARY KEY NOT NULL,
+    category_id TEXT    NOT NULL REFERENCES category(id),
+    field       INTEGER AS RuleField NOT NULL,
+    match_type  INTEGER AS MatchType NOT NULL,
+    value       TEXT    NOT NULL,      -- match string; for AMOUNT_RANGE: "minCents-maxCents"
+    priority    INTEGER NOT NULL DEFAULT 0,
+    is_built_in INTEGER NOT NULL DEFAULT 0,
+
+    CHECK (field       BETWEEN 0 AND 2),
+    CHECK (match_type  BETWEEN 0 AND 3),
+    CHECK (is_built_in IN (0, 1))
+);
+
+CREATE INDEX category_rule_priority_idx    ON category_rule(priority);
+CREATE INDEX category_rule_category_id_idx ON category_rule(category_id);

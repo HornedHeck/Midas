@@ -1,0 +1,9 @@
+import kotlin.Int;
+
+CREATE TABLE category (
+    id           TEXT    PRIMARY KEY NOT NULL,
+    name         TEXT    NOT NULL,
+    icon         TEXT    NOT NULL,
+    color        INTEGER AS Int NOT NULL,
+    budget_limit INTEGER
+);
