@@ -8,7 +8,7 @@ class MidasApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        startKoin {
+        val koin = startKoin {
             androidContext(this@MidasApp)
             modules(modules)
         }
