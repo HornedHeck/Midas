@@ -1,3 +1,5 @@
+@file:Suppress("MatchingDeclarationName")
+
 package com.hornedheck.midas.ui.main
 
 import androidx.navigation3.runtime.NavKey
