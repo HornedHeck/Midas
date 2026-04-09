@@ -85,3 +85,9 @@ sqldelight {
         }
     }
 }
+
+koinCompiler {
+    debugLogs = true
+    userLogs = true
+    compileSafety = true
+}

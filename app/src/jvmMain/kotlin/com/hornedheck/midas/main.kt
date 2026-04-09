@@ -5,9 +5,7 @@ import androidx.compose.ui.window.application
 import org.koin.core.context.startKoin
 
 fun main() = application {
-    startKoin {
-        modules(modules)
-    }
+    initKoin()
     Window(
         onCloseRequest = ::exitApplication,
         title = "Midas",

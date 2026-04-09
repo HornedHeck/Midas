@@ -9,6 +9,7 @@ import com.hornedheck.midas.ui.transaction.transactionModule
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.plus
 import org.koin.dsl.module
+import org.koin.plugin.module.dsl.create
 
 val uiModule = module {
     includes(
@@ -20,10 +21,12 @@ val uiModule = module {
     )
 
     single {
-        SavedStateConfiguration {
-            serializersModule = getAll<SerializersModule>()
-                .reduce { acc, module -> acc + module }
-        }
+        create(::provideSavedStateConfig)
     }
 }
 
+fun provideSavedStateConfig(modules: List<SerializersModule>) =
+    SavedStateConfiguration {
+        serializersModule =
+            modules.reduceOrNull { acc, module -> acc + module } ?: SerializersModule {}
+    }
