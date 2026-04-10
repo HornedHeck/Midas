@@ -37,10 +37,19 @@ kotlin {
             dependencies {
 //                implementation(libs.kotlin.stdlib)
                 // Add KMP dependencies here
-
                 // Koin
                 implementation(project.dependencies.platform(libs.koin.bom))
                 implementation(libs.koin.core)
+                implementation(libs.koin.annotations)
+
+                // Coroutines
+                implementation(libs.kotlinx.coroutines.core)
+
+                // Date/Time
+                implementation(libs.kotlinx.datetime)
+
+                // Domain
+                implementation(project(":domain"))
             }
         }
 
@@ -82,12 +91,7 @@ sqldelight {
     databases {
         register("Database"){
             packageName = "com.hornedheck.midas.db"
+            generateAsync = true
         }
     }
-}
-
-koinCompiler {
-    debugLogs = true
-    userLogs = true
-    compileSafety = true
 }

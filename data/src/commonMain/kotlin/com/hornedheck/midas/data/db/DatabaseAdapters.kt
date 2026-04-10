@@ -4,6 +4,7 @@ import app.cash.sqldelight.ColumnAdapter
 import com.hornedheck.midas.data.db.model.CategorySource
 import com.hornedheck.midas.data.db.model.MatchType
 import com.hornedheck.midas.data.db.model.RuleField
+import kotlinx.datetime.LocalDateTime
 
 internal object CategorySourceAdapter : ColumnAdapter<CategorySource, Long> {
     override fun decode(databaseValue: Long): CategorySource =
@@ -26,4 +27,9 @@ internal object MatchTypeAdapter : ColumnAdapter<MatchType, Long> {
 internal object ColorAdapter : ColumnAdapter<Int, Long> {
     override fun decode(databaseValue: Long): Int = databaseValue.toInt()
     override fun encode(value: Int): Long = value.toLong()
+}
+
+internal object LocalDateTimeAdapter : ColumnAdapter<LocalDateTime, String> {
+    override fun decode(databaseValue: String): LocalDateTime = LocalDateTime.parse(databaseValue)
+    override fun encode(value: LocalDateTime): String = value.toString()
 }

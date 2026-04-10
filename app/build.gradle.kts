@@ -28,20 +28,24 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(project(":data"))
+            implementation(project(":domain"))
 
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
+            implementation(compose.materialIconsExtended)
             implementation(libs.compose.ui)
             implementation(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
+            // Coroutines
+            implementation(libs.kotlinx.coroutines.core)
+
             // Koin
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
-
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.navigation3)
@@ -53,6 +57,9 @@ kotlin {
             // Serialization
             implementation(libs.kotlinx.serialization.core)
             implementation(libs.kotlinx.serialization.json)
+
+            // Date/Time
+            implementation(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -111,7 +118,6 @@ compose.desktop {
 }
 
 koinCompiler {
-    debugLogs = true
-    userLogs = true
-    compileSafety = true
+    // https://github.com/InsertKoinIO/koin/issues/2400
+    compileSafety = false
 }

@@ -20,7 +20,7 @@ val uiModule = module {
         csvImportModule,
     )
 
-    single {
+    single<SavedStateConfiguration> {
         create(::provideSavedStateConfig)
     }
 }
