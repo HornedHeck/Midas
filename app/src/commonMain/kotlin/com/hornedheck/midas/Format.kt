@@ -27,6 +27,15 @@ fun formatDateHeader(date: LocalDate): String {
     }
 }
 
+fun formatDate(date: LocalDate): String =
+    LocalDate.Format {
+        monthName(MonthNames.ENGLISH_FULL)
+        chars(" ")
+        day()
+        chars(", ")
+        year()
+    }.format(date)
+
 @Suppress("MagicNumber")
 fun formatAmount(amountCents: Long): String {
     val isExpense = amountCents < 0
@@ -41,3 +50,19 @@ fun formatAmount(amountCents: Long): String {
         append(" USD")
     }
 }
+
+@Suppress("MagicNumber")
+fun parseAmountToCents(text: String): Long? {
+    val cleaned = text.trim()
+    if (cleaned.isEmpty()) return null
+    val dotIndex = cleaned.indexOf('.')
+    if (dotIndex == -1) {
+        return cleaned.toLongOrNull()?.times(100)
+    }
+    val intStr = cleaned.substring(0, dotIndex)
+    val fracStr = cleaned.substring(dotIndex + 1).take(2).padEnd(2, '0')
+    val intPart = if (intStr.isEmpty()) 0L else intStr.toLongOrNull() ?: return null
+    val fracPart = fracStr.toLongOrNull() ?: return null
+    return intPart * 100 + fracPart
+}
+

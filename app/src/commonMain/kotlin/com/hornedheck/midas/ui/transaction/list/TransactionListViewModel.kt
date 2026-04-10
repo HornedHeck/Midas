@@ -8,6 +8,8 @@ import com.hornedheck.midas.formatAmount
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class TransactionListViewModel(
@@ -19,6 +21,9 @@ class TransactionListViewModel(
 
     init {
         loadTransactions()
+        repo.changes()
+            .onEach { loadTransactions() }
+            .launchIn(viewModelScope)
     }
 
     private fun loadTransactions() {

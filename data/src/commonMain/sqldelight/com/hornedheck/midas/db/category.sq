@@ -7,3 +7,6 @@ CREATE TABLE category (
     color        INTEGER AS Int NOT NULL,
     budget_limit INTEGER
 );
+
+selectAll:
+SELECT id, name, color FROM category ORDER BY name;

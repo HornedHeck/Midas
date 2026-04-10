@@ -31,3 +31,12 @@ SELECT
 FROM entry e
 LEFT JOIN category c ON e.category_id = c.id
 ORDER BY e.datetime DESC;
+
+insert:
+INSERT INTO entry (
+    id, datetime, amount, description, raw_description, normalized_description,
+    category_id, notes, is_manual, category_source
+) VALUES (
+    :id, :datetime, :amount, :description, :description, NULL,
+    :categoryId, :notes, 1, :categorySource
+);

@@ -15,6 +15,7 @@ kotlin{
 
                 // Date/Time
                 implementation(libs.kotlinx.datetime)
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
 

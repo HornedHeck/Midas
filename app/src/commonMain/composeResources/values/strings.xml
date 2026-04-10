@@ -1,9 +1,21 @@
 <resources>
     <string name="app_name">Midas</string>
     <string name="screen_transactions">Transactions</string>
+    <string name="screen_add_transaction">Add Transaction</string>
     <string name="cd_add_transaction">Add transaction</string>
+    <string name="cd_back">Back</string>
     <string name="error_loading_transactions">Failed to load transactions</string>
     <string name="empty_transactions">You haven't recorded any transactions yet\nAdd your first one and start tracking</string>
+
+    <string name="label_amount">Amount</string>
+    <string name="label_description">Description*</string>
+    <string name="label_date">Date*</string>
+    <string name="label_category">Category</string>
+    <string name="label_notes">Notes</string>
+    <string name="hint_none">None</string>
+    <string name="action_save">Save</string>
+    <string name="type_expense">Expense</string>
+    <string name="type_income">Income</string>
 
     <string-array name="days_of_week">
         <item>Monday</item>
