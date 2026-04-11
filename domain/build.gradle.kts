@@ -6,16 +6,20 @@ plugins {
 kotlin{
     jvm()
 
-    sourceSets{
-        commonMain{
+    sourceSets {
+        commonMain {
             dependencies {
                 // Koin
                 implementation(project.dependencies.platform(libs.koin.bom))
                 implementation(libs.koin.core)
+
+                // Date/Time
+                implementation(libs.kotlinx.datetime)
+                implementation(libs.kotlinx.coroutines.core)
             }
         }
 
-        commonTest{
+        commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
 

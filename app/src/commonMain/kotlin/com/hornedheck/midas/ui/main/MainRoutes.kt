@@ -3,13 +3,17 @@
 package com.hornedheck.midas.ui.main
 
 import androidx.navigation3.runtime.NavKey
+import com.hornedheck.midas.ui.navigation.LocalNavBackStack
+import com.hornedheck.midas.ui.transaction.Transaction
+import com.hornedheck.midas.ui.transaction.list.TransactionListScreen
+import com.hornedheck.midas.ui.transaction.list.TransactionListViewModel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclassesOfSealed
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
+import org.koin.plugin.module.dsl.viewModel
 
 @Serializable
 sealed interface Main : NavKey {
@@ -36,11 +40,17 @@ val mainModule = module {
         }
     }
 
+
     navigation<Main.Dashboard> {
         /* View Here */
     }
+
+    viewModel<TransactionListViewModel>()
     navigation<Main.TransactionsList> {
-        /* View Here */
+        val backStack = LocalNavBackStack.current
+        TransactionListScreen(
+            onAddTransaction = { backStack.add(Transaction.Add()) },
+        )
     }
     navigation<Main.CategoriesList> {
         /* View Here */
@@ -49,4 +59,5 @@ val mainModule = module {
         /* View Here */
     }
 }
+
 
