@@ -9,12 +9,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 
+private const val SYSTEM_BAR_SCRIM_COLOR = 0xFFFFFF
+
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(0xFFFFFF),
-            navigationBarStyle = SystemBarStyle.dark(0xFFFFFF)
+            statusBarStyle = SystemBarStyle.dark(SYSTEM_BAR_SCRIM_COLOR),
+            navigationBarStyle = SystemBarStyle.dark(SYSTEM_BAR_SCRIM_COLOR)
         )
         super.onCreate(savedInstanceState)
 

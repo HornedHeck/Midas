@@ -36,10 +36,10 @@ val transactionModule = module {
     }
 
     viewModel<AddTransactionViewModel>()
-    navigation<Transaction.Add> {
+    navigation<Transaction.Add>{
         val backStack = LocalNavBackStack.current
         AddTransactionScreen(
-            onBack = { backStack.removeLastOrNull<NavKey>() },
+            onBack = { backStack.removeLastOrNull() },
         )
     }
     navigation<Transaction.Detail> {

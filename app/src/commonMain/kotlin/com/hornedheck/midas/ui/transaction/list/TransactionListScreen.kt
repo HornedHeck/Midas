@@ -2,14 +2,12 @@ package com.hornedheck.midas.ui.transaction.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -19,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hornedheck.midas.formatDateHeader
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.theme.MidasColor
+import com.hornedheck.midas.ui.navigation.BottomNavBar
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.cd_add_transaction
 import midas.app.generated.resources.empty_transactions
@@ -63,6 +63,7 @@ fun TransactionListScreen(
                 title = { Text(stringResource(Res.string.screen_transactions)) },
             )
         },
+        bottomBar = { BottomNavBar() },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddTransaction) {
                 Icon(
@@ -117,21 +118,38 @@ private fun TransactionListLoading() {
 
 @Composable
 private fun TransactionListContent(groups: List<TransactionGroup>) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        groups.forEach { group ->
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        groups.forEachIndexed { groupIndex, group ->
             stickyHeader(key = group.date) {
                 Text(
                     text = formatDateHeader(group.date),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface),
+                        .padding(
+                            start = AppDimens.spacing4x,
+                            end = AppDimens.spacing4x,
+                            top = AppDimens.spacing2x,
+                            bottom = AppDimens.spacing1x,
+                        ),
                 )
-                HorizontalDivider()
+                HorizontalDivider(
+                    modifier = Modifier.padding(
+                        horizontal = AppDimens.spacing4x
+                    )
+                )
             }
-            items(group.transactions, key = TransactionUiItem::id) { item ->
+            itemsIndexed(group.transactions, key = { _, item -> item.id }) { index, item ->
                 TransactionItem(item)
-                HorizontalDivider()
+                if (groupIndex != groups.lastIndex || index != group.transactions.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(
+                            horizontal = AppDimens.spacing4x
+                        )
+                    )
+                }
             }
         }
     }
@@ -155,38 +173,29 @@ private fun TransactionItem(item: TransactionUiItem) {
     val circleColor = item.categoryColor?.let { argb ->
         Color(argb)
     } ?: MaterialTheme.colorScheme.surfaceVariant
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                horizontal = AppDimens.spacing2x,
-                vertical = AppDimens.spacing1x
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(AppDimens.spacing10x)
-                .clip(CircleShape)
-                .background(circleColor),
-        )
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = AppDimens.spacing2x)
-        ) {
+    ListItem(
+        headlineContent = {
             Text(item.description, style = MaterialTheme.typography.bodyLarge)
+        },
+        supportingContent = {
             Text(item.categoryName ?: "None", style = MaterialTheme.typography.bodySmall)
+        },
+        trailingContent = {
+            Text(
+                text = item.formattedAmount,
+                color = if (item.isExpense) MidasColor.Expense else MidasColor.Income,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        },
+        leadingContent = {
+            Box(
+                modifier = Modifier
+                    .size(AppDimens.spacing5x)
+                    .clip(CircleShape)
+                    .background(circleColor),
+            )
         }
-
-        Text(
-            text = item.formattedAmount,
-            color = if (item.isExpense) MidasColor.Expense else MidasColor.Income,
-            style = MaterialTheme.typography.bodyLarge,
-        )
-    }
+    )
 }
 
 

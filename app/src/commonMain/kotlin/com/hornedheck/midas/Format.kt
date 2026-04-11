@@ -23,7 +23,7 @@ fun formatDateHeader(date: LocalDate): String {
             chars(" ")
             day()
         }
-        formatter.format(date)
+        formatter.format(date).uppercase()
     }
 }
 
@@ -53,16 +53,16 @@ fun formatAmount(amountCents: Long): String {
 
 @Suppress("MagicNumber")
 fun parseAmountToCents(text: String): Long? {
-    val cleaned = text.trim()
-    if (cleaned.isEmpty()) return null
+    val cleaned = text.trim().takeIf { it.isNotEmpty() } ?: return null
     val dotIndex = cleaned.indexOf('.')
-    if (dotIndex == -1) {
-        return cleaned.toLongOrNull()?.times(100)
+    return if (dotIndex == -1) {
+        cleaned.toLongOrNull()?.times(100)
+    } else {
+        val intStr = cleaned.substring(0, dotIndex)
+        val fracStr = cleaned.substring(dotIndex + 1).take(2).padEnd(2, '0')
+        val intPart = if (intStr.isEmpty()) 0L else intStr.toLongOrNull()
+        val fracPart = fracStr.toLongOrNull()
+        if (intPart == null || fracPart == null) null else intPart * 100 + fracPart
     }
-    val intStr = cleaned.substring(0, dotIndex)
-    val fracStr = cleaned.substring(dotIndex + 1).take(2).padEnd(2, '0')
-    val intPart = if (intStr.isEmpty()) 0L else intStr.toLongOrNull() ?: return null
-    val fracPart = fracStr.toLongOrNull() ?: return null
-    return intPart * 100 + fracPart
 }
 

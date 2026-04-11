@@ -3,6 +3,11 @@
     <string name="screen_transactions">Transactions</string>
     <string name="screen_add_transaction">Add Transaction</string>
     <string name="cd_add_transaction">Add transaction</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_transactions">Transactions</string>
+    <string name="nav_categories">Categories</string>
+    <string name="nav_settings">Settings</string>
     <string name="cd_back">Back</string>
     <string name="error_loading_transactions">Failed to load transactions</string>
     <string name="empty_transactions">You haven't recorded any transactions yet\nAdd your first one and start tracking</string>

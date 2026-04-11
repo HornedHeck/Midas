@@ -27,7 +27,10 @@ fun MidasAppTheme(
     )
 }
 
+private const val COLOR_INCOME = 0xFF66BB6A
+private const val COLOR_EXPENSE = 0xFFE57373
+
 object MidasColor {
-    val Income = Color(0xFF66BB6A)
-    val Expense = Color(0xFFE57373)
+    val Income = Color(COLOR_INCOME)
+    val Expense = Color(COLOR_EXPENSE)
 }

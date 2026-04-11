@@ -29,24 +29,25 @@ class TransactionListViewModel(
     private fun loadTransactions() {
         viewModelScope.launch {
             _state.value = TransactionListState.Loading
-            try {
-                val transactions = repo.getTransactions()
-                val groups = transactions
-                    .groupBy { it.datetime.date }
-                    .map { (date, items) ->
-                        TransactionGroup(
-                            date = date,
-                            transactions = items.map { it.toUiItem() },
-                        )
+            runCatching { repo.getTransactions() }
+                .onSuccess { transactions ->
+                    val groups = transactions
+                        .groupBy { it.datetime.date }
+                        .map { (date, items) ->
+                            TransactionGroup(
+                                date = date,
+                                transactions = items.map { it.toUiItem() },
+                            )
+                        }
+                    _state.value = if (groups.isEmpty()) {
+                        TransactionListState.Empty
+                    } else {
+                        TransactionListState.Content(groups)
                     }
-                _state.value = if (groups.isEmpty()) {
-                    TransactionListState.Empty
-                } else {
-                    TransactionListState.Content(groups)
                 }
-            } catch (e: Exception) {
-                _state.value = TransactionListState.Error(e.message ?: "")
-            }
+                .onFailure { e ->
+                    _state.value = TransactionListState.Error(e.message ?: "")
+                }
         }
     }
 

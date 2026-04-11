@@ -46,6 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.hornedheck.midas.formatDate
 import com.hornedheck.midas.theme.AppDimens
 import kotlinx.datetime.LocalDate
@@ -133,75 +134,20 @@ fun AddTransactionScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = {
-            Box(modifier = Modifier.padding(AppDimens.spacing4x)) {
-                Button(
-                    onClick = onSave,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = CircleShape,
-                    enabled = !state.isLoading,
-                ) {
-                    if (state.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(AppDimens.spacing4x),
-                            strokeWidth = AppDimens.spacing1x,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                        )
-                    } else {
-                        Text(stringResource(Res.string.action_save))
-                    }
-                }
-            }
-        },
+        bottomBar = { SaveButton(isLoading = state.isLoading, onSave = onSave) },
     ) { paddingValues ->
-        Column(
+        AddTransactionFormContent(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(AppDimens.spacing4x),
-            verticalArrangement = Arrangement.spacedBy(AppDimens.spacing3x),
-        ) {
-            TypeToggle(
-                isExpense = state.isExpense,
-                onToggle = onToggleType,
-            )
-
-            AmountField(
-                value = state.amountText,
-                error = state.amountError,
-                onValueChange = onAmountChange,
-            )
-
-            OutlinedTextField(
-                value = state.description,
-                onValueChange = onDescriptionChange,
-                label = { Text(stringResource(Res.string.label_description)) },
-                isError = state.descriptionError != null,
-                supportingText = state.descriptionError?.let { msg -> { Text(msg) } },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-
-            DateField(
-                date = state.date,
-                onPickerOpen = { showDatePicker = true },
-            )
-
-            CategoryDropdown(
-                categories = state.categories,
-                selectedId = state.selectedCategoryId,
-                onCategorySelected = onCategoryChange,
-            )
-
-            OutlinedTextField(
-                value = state.notes,
-                onValueChange = onNotesChange,
-                label = { Text(stringResource(Res.string.label_notes)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-            )
-        }
+                .padding(paddingValues),
+            state = state,
+            onToggleType = onToggleType,
+            onAmountChange = onAmountChange,
+            onDescriptionChange = onDescriptionChange,
+            onPickerOpen = { showDatePicker = true },
+            onCategoryChange = onCategoryChange,
+            onNotesChange = onNotesChange,
+        )
     }
 
     if (showDatePicker) {
@@ -212,6 +158,77 @@ fun AddTransactionScreen(
                 showDatePicker = false
             },
             onDismiss = { showDatePicker = false },
+        )
+    }
+}
+
+@Composable
+private fun SaveButton(isLoading: Boolean, onSave: () -> Unit) {
+    Box(modifier = Modifier.padding(AppDimens.spacing4x)) {
+        Button(
+            onClick = onSave,
+            modifier = Modifier.fillMaxWidth(),
+            shape = CircleShape,
+            enabled = !isLoading,
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(AppDimens.spacing4x),
+                    strokeWidth = AppDimens.spacing1x,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            } else {
+                Text(stringResource(Res.string.action_save))
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddTransactionFormContent(
+    modifier: Modifier = Modifier,
+    state: AddTransactionFormState,
+    onToggleType: (Boolean) -> Unit,
+    onAmountChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    onPickerOpen: () -> Unit,
+    onCategoryChange: (String?) -> Unit,
+    onNotesChange: (String) -> Unit,
+) {
+    Column(
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(AppDimens.spacing4x),
+        verticalArrangement = Arrangement.spacedBy(AppDimens.spacing3x),
+    ) {
+        TypeToggle(isExpense = state.isExpense, onToggle = onToggleType)
+
+        AmountField(value = state.amountText, error = state.amountError, onValueChange = onAmountChange)
+
+        OutlinedTextField(
+            value = state.description,
+            onValueChange = onDescriptionChange,
+            label = { Text(stringResource(Res.string.label_description)) },
+            isError = state.descriptionError != null,
+            supportingText = state.descriptionError?.let { msg -> { Text(msg) } },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+        )
+
+        DateField(date = state.date, onPickerOpen = onPickerOpen)
+
+        CategoryDropdown(
+            categories = state.categories,
+            selectedId = state.selectedCategoryId,
+            onCategorySelected = onCategoryChange,
+        )
+
+        OutlinedTextField(
+            value = state.notes,
+            onValueChange = onNotesChange,
+            label = { Text(stringResource(Res.string.label_notes)) },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3,
         )
     }
 }
