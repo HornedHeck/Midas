@@ -12,7 +12,7 @@ import org.jetbrains.compose.resources.stringArrayResource
 import kotlin.math.abs
 
 @Composable
-fun formatDateHeader(date: LocalDate): String {
+fun formatDate(date: LocalDate): String {
     val days = stringArrayResource(Res.array.days_of_week)
     val monthNames = stringArrayResource(Res.array.months)
     return remember(date, days, monthNames) {
@@ -26,15 +26,6 @@ fun formatDateHeader(date: LocalDate): String {
         formatter.format(date).uppercase()
     }
 }
-
-fun formatDate(date: LocalDate): String =
-    LocalDate.Format {
-        monthName(MonthNames.ENGLISH_FULL)
-        chars(" ")
-        day()
-        chars(", ")
-        year()
-    }.format(date)
 
 @Suppress("MagicNumber")
 fun formatAmount(amountCents: Long): String {
@@ -50,19 +41,3 @@ fun formatAmount(amountCents: Long): String {
         append(" USD")
     }
 }
-
-@Suppress("MagicNumber")
-fun parseAmountToCents(text: String): Long? {
-    val cleaned = text.trim().takeIf { it.isNotEmpty() } ?: return null
-    val dotIndex = cleaned.indexOf('.')
-    return if (dotIndex == -1) {
-        cleaned.toLongOrNull()?.times(100)
-    } else {
-        val intStr = cleaned.substring(0, dotIndex)
-        val fracStr = cleaned.substring(dotIndex + 1).take(2).padEnd(2, '0')
-        val intPart = if (intStr.isEmpty()) 0L else intStr.toLongOrNull()
-        val fracPart = fracStr.toLongOrNull()
-        if (intPart == null || fracPart == null) null else intPart * 100 + fracPart
-    }
-}
-

@@ -46,7 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.hornedheck.midas.formatDate
 import com.hornedheck.midas.theme.AppDimens
 import kotlinx.datetime.LocalDate
@@ -65,6 +64,7 @@ import midas.app.generated.resources.label_notes
 import midas.app.generated.resources.screen_add_transaction
 import midas.app.generated.resources.type_expense
 import midas.app.generated.resources.type_income
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Instant
@@ -109,9 +109,10 @@ fun AddTransactionScreen(
     onClearError: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val generalErrorText = state.generalError?.let { stringResource(it) }
 
     LaunchedEffect(state.generalError) {
-        state.generalError?.let {
+        generalErrorText?.let {
             snackbarHostState.showSnackbar(it)
             onClearError()
         }
@@ -203,14 +204,18 @@ private fun AddTransactionFormContent(
     ) {
         TypeToggle(isExpense = state.isExpense, onToggle = onToggleType)
 
-        AmountField(value = state.amountText, error = state.amountError, onValueChange = onAmountChange)
+        AmountField(
+            value = state.amountText,
+            error = state.amountError,
+            onValueChange = onAmountChange
+        )
 
         OutlinedTextField(
             value = state.description,
             onValueChange = onDescriptionChange,
             label = { Text(stringResource(Res.string.label_description)) },
             isError = state.descriptionError != null,
-            supportingText = state.descriptionError?.let { msg -> { Text(msg) } },
+            supportingText = state.descriptionError?.let { res -> { Text(stringResource(res)) } },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
         )
@@ -262,7 +267,7 @@ private fun TypeToggle(
 @Composable
 private fun AmountField(
     value: String,
-    error: String?,
+    error: StringResource?,
     onValueChange: (String) -> Unit,
 ) {
     OutlinedTextField(
@@ -275,7 +280,7 @@ private fun AmountField(
         prefix = { Text("$") },
         keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
         isError = error != null,
-        supportingText = error?.let { msg -> { Text(msg) } },
+        supportingText = error?.let { res -> { Text(stringResource(res)) } },
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
     )
@@ -296,8 +301,11 @@ private fun DateField(
                 Icon(Icons.Default.CalendarMonth, contentDescription = null)
             },
             singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .matchParentSize()
                 .clickable(onClick = onPickerOpen),
         )
     }

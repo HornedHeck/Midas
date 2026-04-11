@@ -2,7 +2,6 @@ package com.hornedheck.midas.ui.transaction.add
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hornedheck.midas.parseAmountToCents
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.channels.Channel
@@ -13,11 +12,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import midas.app.generated.resources.Res
+import midas.app.generated.resources.error_amount_zero
+import midas.app.generated.resources.error_description_required
+import midas.app.generated.resources.error_invalid_amount
+import midas.app.generated.resources.error_save_transaction_failed
+import kotlin.math.min
+import kotlin.time.Clock
 
 class AddTransactionViewModel(
     private val transactionsRepo: ITransactionsRepo,
@@ -42,7 +47,11 @@ class AddTransactionViewModel(
         viewModelScope.launch {
             runCatching { categoriesRepo.getCategories() }
                 .onSuccess { categories ->
-                    _state.update { it.copy(categories = categories.map { c -> CategoryOption(c.id, c.name) }) }
+                    _state.update {
+                        it.copy(categories = categories.map { c ->
+                            CategoryOption(c.id, c.name)
+                        })
+                    }
                 }
         }
     }
@@ -81,16 +90,16 @@ class AddTransactionViewModel(
         var hasError = false
 
         if (current.description.isBlank()) {
-            _state.update { it.copy(descriptionError = "Description is required") }
+            _state.update { it.copy(descriptionError = Res.string.error_description_required) }
             hasError = true
         }
 
         val amountCents = parseAmountToCents(current.amountText)
         if (amountCents == null) {
-            _state.update { it.copy(amountError = "Invalid amount") }
+            _state.update { it.copy(amountError = Res.string.error_invalid_amount) }
             hasError = true
         } else if (amountCents == 0L) {
-            _state.update { it.copy(amountError = "Amount must not be zero") }
+            _state.update { it.copy(amountError = Res.string.error_amount_zero) }
             hasError = true
         }
 
@@ -111,9 +120,28 @@ class AddTransactionViewModel(
                 )
             }.onSuccess {
                 _savedEvent.send(Unit)
-            }.onFailure { e ->
-                _state.update { it.copy(isLoading = false, generalError = e.message ?: "Failed to save transaction") }
+            }.onFailure { _ ->
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        generalError = Res.string.error_save_transaction_failed,
+                    )
+                }
             }
+        }
+    }
+
+    @Suppress("MagicNumber")
+    private fun parseAmountToCents(text: String): Long? {
+        val text = text.trim().takeIf { it.isNotEmpty() } ?: return null
+        val dotIndex = text.indexOf('.')
+        return if (dotIndex != -1) {
+            text.substring(0, min(dotIndex + 3, text.length))
+                .padEnd(dotIndex + 3, '0')
+                .replace(".", "")
+                .toLong()
+        } else {
+            text.toLong() * 100
         }
     }
 }

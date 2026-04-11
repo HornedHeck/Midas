@@ -48,6 +48,9 @@ kotlin {
                 // Date/Time
                 implementation(libs.kotlinx.datetime)
 
+                // SQLDelight
+                implementation(libs.sqldelight.coroutines)
+
                 // Domain
                 implementation(project(":domain"))
             }

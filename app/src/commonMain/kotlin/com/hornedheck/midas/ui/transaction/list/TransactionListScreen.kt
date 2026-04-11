@@ -30,7 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hornedheck.midas.formatDateHeader
+import com.hornedheck.midas.formatDate
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.theme.MidasColor
 import com.hornedheck.midas.ui.navigation.BottomNavBar
@@ -124,7 +124,7 @@ private fun TransactionListContent(groups: List<TransactionGroup>) {
         groups.forEachIndexed { groupIndex, group ->
             stickyHeader(key = group.date) {
                 Text(
-                    text = formatDateHeader(group.date),
+                    text = formatDate(group.date),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier
                         .fillMaxWidth()

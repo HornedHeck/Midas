@@ -1,6 +1,7 @@
 package com.hornedheck.midas.ui.transaction.add
 
 import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.StringResource
 
 data class CategoryOption(
     val id: String,
@@ -16,7 +17,7 @@ data class AddTransactionFormState(
     val selectedCategoryId: String? = null,
     val notes: String = "",
     val isLoading: Boolean = false,
-    val descriptionError: String? = null,
-    val amountError: String? = null,
-    val generalError: String? = null,
+    val descriptionError: StringResource? = null,
+    val amountError: StringResource? = null,
+    val generalError: StringResource? = null,
 )

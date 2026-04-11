@@ -1,13 +1,12 @@
 package com.hornedheck.midas.data.repository
 
-import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import com.hornedheck.midas.data.db.model.CategorySource
 import com.hornedheck.midas.db.Database
 import com.hornedheck.midas.domain.model.Transaction
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
 import kotlin.coroutines.CoroutineContext
@@ -19,11 +18,7 @@ class TransactionsRepo(
     private val ioContext: CoroutineContext,
 ) : ITransactionsRepo {
 
-    private val _changes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-
-    override fun changes(): Flow<Unit> = _changes.asSharedFlow()
-
-    override suspend fun getTransactions(): List<Transaction> = withContext(ioContext) {
+    override fun getTransactions(): Flow<List<Transaction>> =
         db.entryQueries.selectAll { id, datetime, amount, description, categoryName, categoryColor ->
             Transaction(
                 id = id,
@@ -33,8 +28,9 @@ class TransactionsRepo(
                 categoryName = categoryName,
                 categoryColor = categoryColor,
             )
-        }.awaitAsList()
-    }
+        }
+            .asFlow()
+            .mapToList(ioContext)
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun addTransaction(
@@ -54,10 +50,6 @@ class TransactionsRepo(
                 notes = notes,
                 categorySource = if (categoryId != null) CategorySource.MANUAL else CategorySource.NONE,
             )
-            _changes.tryEmit(Unit)
-            Unit
         }
     }
 }
-
-

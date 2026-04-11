@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDateTime
 
 interface ITransactionsRepo {
-    suspend fun getTransactions(): List<Transaction>
+    fun getTransactions(): Flow<List<Transaction>>
     suspend fun addTransaction(
         datetime: LocalDateTime,
         amountCents: Long,
@@ -13,5 +13,4 @@ interface ITransactionsRepo {
         categoryId: String?,
         notes: String?,
     )
-    fun changes(): Flow<Unit>
 }

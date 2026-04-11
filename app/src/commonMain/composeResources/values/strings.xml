@@ -12,6 +12,11 @@
     <string name="error_loading_transactions">Failed to load transactions</string>
     <string name="empty_transactions">You haven't recorded any transactions yet\nAdd your first one and start tracking</string>
 
+    <string name="error_description_required">Description is required</string>
+    <string name="error_invalid_amount">Invalid amount</string>
+    <string name="error_amount_zero">Amount must not be zero</string>
+    <string name="error_save_transaction_failed">Failed to save transaction</string>
+
     <string name="label_amount">Amount</string>
     <string name="label_description">Description*</string>
     <string name="label_date">Date*</string>

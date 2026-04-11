@@ -8,9 +8,10 @@ import com.hornedheck.midas.formatAmount
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 class TransactionListViewModel(
     private val repo: ITransactionsRepo,
@@ -20,35 +21,23 @@ class TransactionListViewModel(
     val state: StateFlow<TransactionListState> = _state.asStateFlow()
 
     init {
-        loadTransactions()
-        repo.changes()
-            .onEach { loadTransactions() }
+        repo.getTransactions()
+            .map { transactions -> transactions.toUiState() }
+            .catch { e -> emit(TransactionListState.Error(e.message ?: "")) }
+            .onEach { _state.value = it }
             .launchIn(viewModelScope)
     }
 
-    private fun loadTransactions() {
-        viewModelScope.launch {
-            _state.value = TransactionListState.Loading
-            runCatching { repo.getTransactions() }
-                .onSuccess { transactions ->
-                    val groups = transactions
-                        .groupBy { it.datetime.date }
-                        .map { (date, items) ->
-                            TransactionGroup(
-                                date = date,
-                                transactions = items.map { it.toUiItem() },
-                            )
-                        }
-                    _state.value = if (groups.isEmpty()) {
-                        TransactionListState.Empty
-                    } else {
-                        TransactionListState.Content(groups)
-                    }
-                }
-                .onFailure { e ->
-                    _state.value = TransactionListState.Error(e.message ?: "")
-                }
-        }
+    private fun List<Transaction>.toUiState(): TransactionListState {
+        val groups = groupBy { it.datetime.date }
+            .map { (date, items) ->
+                TransactionGroup(
+                    date = date,
+                    transactions = items.map { it.toUiItem() },
+                )
+            }
+        return if (groups.isEmpty()) TransactionListState.Empty
+        else TransactionListState.Content(groups)
     }
 
     private fun Transaction.toUiItem(): TransactionUiItem {
