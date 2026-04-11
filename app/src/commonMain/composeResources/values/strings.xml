@@ -24,6 +24,8 @@
     <string name="label_notes">Notes</string>
     <string name="hint_none">None</string>
     <string name="action_save">Save</string>
+    <string name="action_ok">OK</string>
+    <string name="action_cancel">Cancel</string>
     <string name="type_expense">Expense</string>
     <string name="type_income">Income</string>
 

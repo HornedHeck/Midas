@@ -52,7 +52,7 @@ kotlin {
                 implementation(libs.sqldelight.coroutines)
 
                 // Domain
-                implementation(project(":domain"))
+                implementation(projects.midas.domain)
             }
         }
 

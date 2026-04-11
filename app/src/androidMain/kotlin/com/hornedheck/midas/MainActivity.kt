@@ -14,11 +14,11 @@ private const val SYSTEM_BAR_SCRIM_COLOR = 0xFFFFFF
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(SYSTEM_BAR_SCRIM_COLOR),
-            navigationBarStyle = SystemBarStyle.dark(SYSTEM_BAR_SCRIM_COLOR)
-        )
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        )
 
         setContent {
             App()

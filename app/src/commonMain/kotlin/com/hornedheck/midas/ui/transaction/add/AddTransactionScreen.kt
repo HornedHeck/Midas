@@ -53,6 +53,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import midas.app.generated.resources.Res
+import midas.app.generated.resources.action_cancel
+import midas.app.generated.resources.action_ok
 import midas.app.generated.resources.action_save
 import midas.app.generated.resources.cd_back
 import midas.app.generated.resources.hint_none
@@ -387,11 +389,11 @@ private fun TransactionDatePickerDialog(
                     } ?: onDismiss()
                 },
             ) {
-                Text("OK")
+                Text(stringResource(Res.string.action_ok))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
         },
     ) {
         DatePicker(state = datePickerState)
