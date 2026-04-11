@@ -50,6 +50,7 @@ val mainModule = module {
         val backStack = LocalNavBackStack.current
         TransactionListScreen(
             onAddTransaction = { backStack.add(Transaction.Add()) },
+            onTransactionClick = { id -> backStack.add(Transaction.Detail(id)) },
         )
     }
     navigation<Main.CategoriesList> {

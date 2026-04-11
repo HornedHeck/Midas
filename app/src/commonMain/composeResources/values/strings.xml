@@ -2,7 +2,10 @@
     <string name="app_name">Midas</string>
     <string name="screen_transactions">Transactions</string>
     <string name="screen_add_transaction">Add Transaction</string>
+    <string name="screen_edit_transaction">Edit Transaction</string>
+    <string name="screen_transaction_details">Transaction Details</string>
     <string name="cd_add_transaction">Add transaction</string>
+    <string name="cd_edit">Edit transaction</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_transactions">Transactions</string>
@@ -16,6 +19,8 @@
     <string name="error_invalid_amount">Invalid amount</string>
     <string name="error_amount_zero">Amount must not be zero</string>
     <string name="error_save_transaction_failed">Failed to save transaction</string>
+    <string name="error_update_transaction_failed">Failed to update transaction</string>
+    <string name="error_loading_transaction">Failed to load transaction</string>
 
     <string name="label_amount">Amount</string>
     <string name="label_description">Description*</string>

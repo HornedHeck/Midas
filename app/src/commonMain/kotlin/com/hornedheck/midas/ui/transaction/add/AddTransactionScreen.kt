@@ -46,7 +46,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hornedheck.midas.formatDate
+import com.hornedheck.midas.util.formatDate
 import com.hornedheck.midas.theme.AppDimens
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -64,6 +64,7 @@ import midas.app.generated.resources.label_date
 import midas.app.generated.resources.label_description
 import midas.app.generated.resources.label_notes
 import midas.app.generated.resources.screen_add_transaction
+import midas.app.generated.resources.screen_edit_transaction
 import midas.app.generated.resources.type_expense
 import midas.app.generated.resources.type_income
 import org.jetbrains.compose.resources.StringResource
@@ -74,9 +75,12 @@ import kotlin.time.Instant
 @Composable
 fun AddTransactionScreen(
     onBack: () -> Unit = {},
+    transactionId: Long? = null,
     viewModel: AddTransactionViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(transactionId) { viewModel.init(transactionId) }
 
     LaunchedEffect(viewModel) {
         viewModel.savedEvent.collect { onBack() }
@@ -84,6 +88,7 @@ fun AddTransactionScreen(
 
     AddTransactionScreen(
         state = state,
+        isEditMode = transactionId != null,
         onBack = onBack,
         onToggleType = viewModel::updateIsExpense,
         onAmountChange = viewModel::updateAmount,
@@ -100,6 +105,7 @@ fun AddTransactionScreen(
 @Composable
 fun AddTransactionScreen(
     state: AddTransactionFormState,
+    isEditMode: Boolean = false,
     onBack: () -> Unit = {},
     onToggleType: (Boolean) -> Unit = {},
     onAmountChange: (String) -> Unit = {},
@@ -125,7 +131,14 @@ fun AddTransactionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.screen_add_transaction)) },
+                title = {
+                    Text(
+                        stringResource(
+                            if (isEditMode) Res.string.screen_edit_transaction
+                            else Res.string.screen_add_transaction
+                        )
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

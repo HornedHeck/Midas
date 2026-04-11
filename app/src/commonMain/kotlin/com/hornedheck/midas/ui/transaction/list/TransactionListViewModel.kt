@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hornedheck.midas.domain.model.Transaction
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
-import com.hornedheck.midas.formatAmount
+import com.hornedheck.midas.util.formatAmount
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

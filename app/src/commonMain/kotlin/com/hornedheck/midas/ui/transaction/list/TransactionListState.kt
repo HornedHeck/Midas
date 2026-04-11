@@ -15,7 +15,7 @@ data class TransactionGroup(
 )
 
 data class TransactionUiItem(
-    val id: String,
+    val id: Long,
     val description: String,
     val categoryName: String?,
     val formattedAmount: String,

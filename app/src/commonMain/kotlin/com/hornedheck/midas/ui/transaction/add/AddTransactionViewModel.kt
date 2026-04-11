@@ -21,6 +21,8 @@ import midas.app.generated.resources.error_amount_zero
 import midas.app.generated.resources.error_description_required
 import midas.app.generated.resources.error_invalid_amount
 import midas.app.generated.resources.error_save_transaction_failed
+import midas.app.generated.resources.error_update_transaction_failed
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.time.Clock
 
@@ -28,6 +30,8 @@ class AddTransactionViewModel(
     private val transactionsRepo: ITransactionsRepo,
     private val categoriesRepo: ICategoriesRepo,
 ) : ViewModel() {
+
+    private var transactionId: Long? = null
 
     private val _state = MutableStateFlow(
         AddTransactionFormState(
@@ -41,6 +45,34 @@ class AddTransactionViewModel(
 
     init {
         loadCategories()
+    }
+
+    @Suppress("MagicNumber")
+    fun init(id: Long?) {
+        if (transactionId == null && id != null) {
+            transactionId = id
+            viewModelScope.launch {
+                runCatching { transactionsRepo.getTransactionById(id) }
+                    .onSuccess { details ->
+                        details?.let { d ->
+                            val isExpense = d.amountCents < 0
+                            val absAmount = abs(d.amountCents)
+                            val amountText = "${absAmount / 100}.${(absAmount % 100).toString().padStart(2, '0')}"
+                            _state.update { current ->
+                                current.copy(
+                                    isExpense = isExpense,
+                                    amountText = amountText,
+                                    description = d.description,
+                                    date = d.datetime.date,
+                                    originalTime = d.datetime.time,
+                                    selectedCategoryId = d.categoryId,
+                                    notes = d.notes.orEmpty(),
+                                )
+                            }
+                        }
+                    }
+            }
+        }
     }
 
     private fun loadCategories() {
@@ -84,7 +116,7 @@ class AddTransactionViewModel(
         _state.update { it.copy(generalError = null) }
     }
 
-    @Suppress("ReturnCount")
+    @Suppress("ReturnCount", "CognitiveComplexMethod")
     fun save() {
         val current = _state.value
         var hasError = false
@@ -109,39 +141,53 @@ class AddTransactionViewModel(
             _state.update { it.copy(isLoading = true) }
             runCatching {
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                val datetime = LocalDateTime(current.date, now.time)
+                val time = current.originalTime ?: now.time
+                val datetime = LocalDateTime(current.date, time)
                 val signedAmount = if (current.isExpense) -(amountCents!!) else amountCents!!
-                transactionsRepo.addTransaction(
-                    datetime = datetime,
-                    amountCents = signedAmount,
-                    description = current.description.trim(),
-                    categoryId = current.selectedCategoryId,
-                    notes = current.notes.ifBlank { null },
-                )
+                val currentId = transactionId
+                if (currentId != null) {
+                    transactionsRepo.updateTransaction(
+                        id = currentId,
+                        datetime = datetime,
+                        amountCents = signedAmount,
+                        description = current.description.trim(),
+                        categoryId = current.selectedCategoryId,
+                        notes = current.notes.ifBlank { null },
+                    )
+                } else {
+                    transactionsRepo.addTransaction(
+                        datetime = datetime,
+                        amountCents = signedAmount,
+                        description = current.description.trim(),
+                        categoryId = current.selectedCategoryId,
+                        notes = current.notes.ifBlank { null },
+                    )
+                }
             }.onSuccess {
                 _savedEvent.send(Unit)
             }.onFailure { _ ->
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        generalError = Res.string.error_save_transaction_failed,
-                    )
+                val errorRes = if (transactionId != null) {
+                    Res.string.error_update_transaction_failed
+                } else {
+                    Res.string.error_save_transaction_failed
                 }
+                _state.update { it.copy(isLoading = false, generalError = errorRes) }
             }
         }
     }
 
     @Suppress("MagicNumber")
     private fun parseAmountToCents(text: String): Long? {
-        val text = text.trim().takeIf { it.isNotEmpty() } ?: return null
-        val dotIndex = text.indexOf('.')
+        val trimmed = text.trim().takeIf { it.isNotEmpty() } ?: return null
+        val dotIndex = trimmed.indexOf('.')
         return if (dotIndex != -1) {
-            text.substring(0, min(dotIndex + 3, text.length))
+            trimmed.substring(0, min(dotIndex + 3, trimmed.length))
                 .padEnd(dotIndex + 3, '0')
                 .replace(".", "")
                 .toLong()
         } else {
-            text.toLong() * 100
+            trimmed.toLong() * 100
         }
     }
 }
+

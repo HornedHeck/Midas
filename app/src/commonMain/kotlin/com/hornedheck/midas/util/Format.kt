@@ -1,4 +1,4 @@
-package com.hornedheck.midas
+package com.hornedheck.midas.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -39,5 +39,20 @@ fun formatAmount(amountCents: Long): String {
         append('.')
         append(cents)
         append(" USD")
+    }
+}
+
+@Suppress("MagicNumber")
+fun formatAmountDetail(amountCents: Long): String {
+    val isExpense = amountCents < 0
+    val absAmount = abs(amountCents)
+    val dollars = absAmount / 100
+    val cents = (absAmount % 100).toString().padStart(2, '0')
+    return buildString {
+        if (isExpense) append('-')
+        append("$ ")
+        append(dollars)
+        append('.')
+        append(cents)
     }
 }

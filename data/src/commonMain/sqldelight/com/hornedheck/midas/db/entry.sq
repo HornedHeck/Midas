@@ -2,7 +2,7 @@ import com.hornedheck.midas.data.db.model.CategorySource;
 import kotlinx.datetime.LocalDateTime;
 
 CREATE TABLE entry (
-    id                     TEXT    PRIMARY KEY NOT NULL,
+    id                     INTEGER PRIMARY KEY AUTOINCREMENT,
     datetime               TEXT    AS LocalDateTime NOT NULL,
     amount                 INTEGER NOT NULL,
     description            TEXT    NOT NULL,
@@ -34,9 +34,35 @@ ORDER BY e.datetime DESC;
 
 insert:
 INSERT INTO entry (
-    id, datetime, amount, description, raw_description, normalized_description,
+    datetime, amount, description, raw_description, normalized_description,
     category_id, notes, is_manual, category_source
 ) VALUES (
-    :id, :datetime, :amount, :description, :description, NULL,
+    :datetime, :amount, :description, :description, NULL,
     :categoryId, :notes, 1, :categorySource
 );
+
+selectById:
+SELECT
+    e.id,
+    e.datetime,
+    e.amount,
+    e.description,
+    e.notes,
+    e.category_id,
+    c.name AS category_name,
+    c.color AS category_color
+FROM entry e
+LEFT JOIN category c ON e.category_id = c.id
+WHERE e.id = :id;
+
+update:
+UPDATE entry
+SET datetime = :datetime,
+    amount = :amount,
+    description = :description,
+    raw_description = :description,
+    normalized_description = NULL,
+    category_id = :categoryId,
+    notes = :notes,
+    category_source = :categorySource
+WHERE id = :id;

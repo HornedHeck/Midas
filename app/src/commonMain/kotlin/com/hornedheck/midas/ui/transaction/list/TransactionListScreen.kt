@@ -1,6 +1,7 @@
 package com.hornedheck.midas.ui.transaction.list
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,7 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hornedheck.midas.formatDate
+import com.hornedheck.midas.util.formatDate
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.theme.MidasColor
 import com.hornedheck.midas.ui.navigation.BottomNavBar
@@ -45,10 +46,11 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun TransactionListScreen(
     onAddTransaction: () -> Unit = {},
+    onTransactionClick: (Long) -> Unit = {},
     viewModel: TransactionListViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    TransactionListScreen(state = state, onAddTransaction = onAddTransaction)
+    TransactionListScreen(state = state, onAddTransaction = onAddTransaction, onTransactionClick = onTransactionClick)
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -56,6 +58,7 @@ fun TransactionListScreen(
 fun TransactionListScreen(
     state: TransactionListState,
     onAddTransaction: () -> Unit = {},
+    onTransactionClick: (Long) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -81,7 +84,7 @@ fun TransactionListScreen(
             when (state) {
                 is TransactionListState.Loading -> TransactionListLoading()
                 is TransactionListState.Empty -> TransactionListEmpty()
-                is TransactionListState.Content -> TransactionListContent(state.groups)
+                is TransactionListState.Content -> TransactionListContent(state.groups, onTransactionClick)
                 is TransactionListState.Error -> TransactionListError(state.message)
             }
         }
@@ -117,7 +120,10 @@ private fun TransactionListLoading() {
 }
 
 @Composable
-private fun TransactionListContent(groups: List<TransactionGroup>) {
+private fun TransactionListContent(
+    groups: List<TransactionGroup>,
+    onTransactionClick: (Long) -> Unit,
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -142,7 +148,7 @@ private fun TransactionListContent(groups: List<TransactionGroup>) {
                 )
             }
             itemsIndexed(group.transactions, key = { _, item -> item.id }) { index, item ->
-                TransactionItem(item)
+                TransactionItem(item, onClick = { onTransactionClick(item.id) })
                 if (groupIndex != groups.lastIndex || index != group.transactions.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.padding(
@@ -169,11 +175,12 @@ private fun TransactionListError(message: String) {
 }
 
 @Composable
-private fun TransactionItem(item: TransactionUiItem) {
+private fun TransactionItem(item: TransactionUiItem, onClick: () -> Unit) {
     val circleColor = item.categoryColor?.let { argb ->
         Color(argb)
     } ?: MaterialTheme.colorScheme.surfaceVariant
     ListItem(
+        modifier = Modifier.clickable(onClick = onClick),
         headlineContent = {
             Text(item.description, style = MaterialTheme.typography.bodyLarge)
         },
