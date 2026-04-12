@@ -33,9 +33,14 @@ fun DeleteTransactionScreen(
     onDeleted: () -> Unit,
     viewModel: DeleteTransactionViewModel = koinViewModel(parameters = { parametersOf(transactionId) }),
 ) {
-    LaunchedEffect(Unit) { viewModel.deletedEvent.collect { onDeleted() } }
-
     val state = viewModel.state.collectAsStateWithLifecycle().value
+
+    LaunchedEffect(state) {
+        if (state is DeleteTransactionState.Success) {
+            viewModel.clearSuccess()
+            onDeleted()
+        }
+    }
 
     DeleteTransactionScreen(
         state = state,
@@ -83,7 +88,7 @@ fun DeleteTransactionScreen(
                 }
                 TextButton(
                     onClick = onConfirmDelete,
-                    enabled = state !is DeleteTransactionState.Loading,
+                    enabled = state is DeleteTransactionState.Idle || state is DeleteTransactionState.Error,
                 ) {
                     Text(
                         text = stringResource(Res.string.action_delete),

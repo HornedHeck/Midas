@@ -5,28 +5,26 @@ import androidx.lifecycle.viewModelScope
 import com.hornedheck.midas.domain.model.Transaction
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import com.hornedheck.midas.util.formatAmount
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+
+private const val SUBSCRIPTION_TIMEOUT = 5_000L
 
 class TransactionListViewModel(
-    private val repo: ITransactionsRepo,
+    repo: ITransactionsRepo,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<TransactionListState>(TransactionListState.Loading)
-    val state: StateFlow<TransactionListState> = _state.asStateFlow()
-
-    init {
-        repo.getTransactions()
-            .map { transactions -> transactions.toUiState() }
-            .catch { e -> emit(TransactionListState.Error(e.message ?: "")) }
-            .onEach { _state.value = it }
-            .launchIn(viewModelScope)
-    }
+    val state: StateFlow<TransactionListState> = repo.getTransactions()
+        .map { transactions -> transactions.toUiState() }
+        .catch { e -> emit(TransactionListState.Error(e.message ?: "")) }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),
+            TransactionListState.Loading,
+        )
 
     private fun List<Transaction>.toUiState(): TransactionListState {
         val groups = groupBy { it.datetime.date }

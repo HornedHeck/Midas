@@ -79,10 +79,13 @@ fun AddTransactionScreen(
     transactionId: Long? = null,
     viewModel: AddTransactionViewModel = koinViewModel(parameters = { parametersOf(transactionId) }),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state = viewModel.state.collectAsStateWithLifecycle().value
 
-    LaunchedEffect(viewModel) {
-        viewModel.savedEvent.collect { onBack() }
+    LaunchedEffect(state) {
+        if (state is AddTransactionState.Saved) {
+            viewModel.clearSaved()
+            onBack()
+        }
     }
 
     AddTransactionScreen(
@@ -96,14 +99,14 @@ fun AddTransactionScreen(
         onCategoryChange = viewModel::updateCategory,
         onNotesChange = viewModel::updateNotes,
         onSave = viewModel::save,
-        onClearError = viewModel::clearError,
+        onErrorShown = viewModel::clearSaveError,
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
-    state: AddTransactionFormState,
+    state: AddTransactionState,
     isEditMode: Boolean = false,
     onBack: () -> Unit = {},
     onToggleType: (Boolean) -> Unit = {},
@@ -113,18 +116,20 @@ fun AddTransactionScreen(
     onCategoryChange: (String?) -> Unit = {},
     onNotesChange: (String) -> Unit = {},
     onSave: () -> Unit = {},
-    onClearError: () -> Unit = {},
+    onErrorShown: () -> Unit = {},
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-    val generalErrorText = state.generalError?.let { stringResource(it) }
+    val form = state.form
+    val isLoading = state is AddTransactionState.Saving
 
-    LaunchedEffect(state.generalError) {
-        generalErrorText?.let {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val saveErrorText = form.saveError?.let { stringResource(it) }
+
+    LaunchedEffect(form.saveError) {
+        saveErrorText?.let {
             snackbarHostState.showSnackbar(it)
-            onClearError()
+            onErrorShown()
         }
     }
-
     var showDatePicker by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -149,13 +154,13 @@ fun AddTransactionScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        bottomBar = { SaveButton(isLoading = state.isLoading, onSave = onSave) },
+        bottomBar = { SaveButton(isLoading = isLoading, onSave = onSave) },
     ) { paddingValues ->
         AddTransactionFormContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            state = state,
+            state = form,
             onToggleType = onToggleType,
             onAmountChange = onAmountChange,
             onDescriptionChange = onDescriptionChange,
@@ -167,7 +172,7 @@ fun AddTransactionScreen(
 
     if (showDatePicker) {
         TransactionDatePickerDialog(
-            currentDate = state.date,
+            currentDate = form.date,
             onDateSelected = { date ->
                 onDateChange(date)
                 showDatePicker = false
@@ -202,7 +207,7 @@ private fun SaveButton(isLoading: Boolean, onSave: () -> Unit) {
 @Composable
 private fun AddTransactionFormContent(
     modifier: Modifier = Modifier,
-    state: AddTransactionFormState,
+    state: AddTransactionFormData,
     onToggleType: (Boolean) -> Unit,
     onAmountChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
