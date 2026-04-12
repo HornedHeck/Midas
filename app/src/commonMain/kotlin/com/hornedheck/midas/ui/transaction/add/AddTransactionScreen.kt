@@ -70,17 +70,16 @@ import midas.app.generated.resources.type_income
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import kotlin.time.Instant
 
 @Composable
 fun AddTransactionScreen(
     onBack: () -> Unit = {},
     transactionId: Long? = null,
-    viewModel: AddTransactionViewModel = koinViewModel(),
+    viewModel: AddTransactionViewModel = koinViewModel(parameters = { parametersOf(transactionId) }),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(transactionId) { viewModel.init(transactionId) }
 
     LaunchedEffect(viewModel) {
         viewModel.savedEvent.collect { onBack() }

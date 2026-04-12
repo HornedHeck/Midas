@@ -51,6 +51,7 @@ val mainModule = module {
         TransactionListScreen(
             onAddTransaction = { backStack.add(Transaction.Add()) },
             onTransactionClick = { id -> backStack.add(Transaction.Detail(id)) },
+            onTransactionDelete = { id, description -> backStack.add(Transaction.Delete(id, description)) },
         )
     }
     navigation<Main.CategoriesList> {

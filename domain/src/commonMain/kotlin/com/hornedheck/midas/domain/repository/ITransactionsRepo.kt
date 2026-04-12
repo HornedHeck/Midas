@@ -25,4 +25,6 @@ interface ITransactionsRepo {
         categoryId: String?,
         notes: String?,
     )
+
+    suspend fun deleteTransaction(id: Long)
 }

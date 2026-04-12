@@ -31,8 +31,14 @@
     <string name="action_save">Save</string>
     <string name="action_ok">OK</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_delete">Delete</string>
     <string name="type_expense">Expense</string>
     <string name="type_income">Income</string>
+
+    <string name="dialog_delete_transaction_title">Delete Transaction</string>
+    <string name="dialog_delete_transaction_body">Transaction "%1$s" will be permanently removed. This action cannot be undone.</string>
+    <string name="error_delete_transaction_failed">Failed to delete transaction</string>
+    <string name="cd_delete">Delete transaction</string>
 
     <string-array name="days_of_week">
         <item>Monday</item>

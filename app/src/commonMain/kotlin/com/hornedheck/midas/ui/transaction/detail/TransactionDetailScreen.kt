@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +38,7 @@ import com.hornedheck.midas.util.formatAmountDetail
 import com.hornedheck.midas.util.formatDate
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.cd_back
+import midas.app.generated.resources.cd_delete
 import midas.app.generated.resources.cd_edit
 import midas.app.generated.resources.error_loading_transaction
 import midas.app.generated.resources.hint_none
@@ -55,6 +57,7 @@ fun TransactionDetailScreen(
     transactionId: Long,
     onBack: () -> Unit = {},
     onEdit: () -> Unit = {},
+    onDelete: (description: String) -> Unit = {},
     viewModel: TransactionDetailViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -65,6 +68,7 @@ fun TransactionDetailScreen(
         state = state,
         onBack = onBack,
         onEdit = onEdit,
+        onDelete = onDelete,
     )
 }
 
@@ -74,6 +78,7 @@ fun TransactionDetailScreen(
     state: TransactionDetailState,
     onBack: () -> Unit = {},
     onEdit: () -> Unit = {},
+    onDelete: (description: String) -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -89,6 +94,12 @@ fun TransactionDetailScreen(
                 },
                 actions = {
                     if (state is TransactionDetailState.Content) {
+                        IconButton(onClick = { onDelete(state.description) }) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = stringResource(Res.string.cd_delete),
+                            )
+                        }
                         IconButton(onClick = onEdit) {
                             Icon(
                                 Icons.Default.Edit,

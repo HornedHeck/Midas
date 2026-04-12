@@ -3,18 +3,21 @@
 package com.hornedheck.midas.ui.transaction
 
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.scene.DialogSceneStrategy
 import com.hornedheck.midas.ui.navigation.LocalNavBackStack
 import com.hornedheck.midas.ui.transaction.add.AddTransactionScreen
 import com.hornedheck.midas.ui.transaction.add.AddTransactionViewModel
+import com.hornedheck.midas.ui.transaction.delete.DeleteTransactionScreen
+import com.hornedheck.midas.ui.transaction.delete.DeleteTransactionViewModel
 import com.hornedheck.midas.ui.transaction.detail.TransactionDetailScreen
 import com.hornedheck.midas.ui.transaction.detail.TransactionDetailViewModel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclassesOfSealed
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
+import org.koin.plugin.module.dsl.buildViewModel
 import org.koin.plugin.module.dsl.viewModel
 
 @Serializable
@@ -25,6 +28,9 @@ sealed interface Transaction : NavKey {
 
     @Serializable
     data class Detail(val id: Long) : Transaction
+
+    @Serializable
+    data class Delete(val id: Long, val description: String) : Transaction
 }
 
 val transactionModule = module {
@@ -36,8 +42,9 @@ val transactionModule = module {
         }
     }
 
-    viewModel<AddTransactionViewModel>()
+    buildViewModel(AddTransactionViewModel::class) { (id: Long?) -> AddTransactionViewModel(id, get(), get()) }
     viewModel<TransactionDetailViewModel>()
+    buildViewModel(DeleteTransactionViewModel::class) { (id: Long) -> DeleteTransactionViewModel(id, get()) }
 
     navigation<Transaction.Add> {
         val backStack = LocalNavBackStack.current
@@ -47,13 +54,28 @@ val transactionModule = module {
         )
     }
 
-    navigation<Transaction.Detail> {
+    navigation<Transaction.Detail> { key ->
         val backStack = LocalNavBackStack.current
-        val transactionId = it.id
         TransactionDetailScreen(
-            transactionId = transactionId,
+            transactionId = key.id,
             onBack = { backStack.removeLastOrNull() },
-            onEdit = { backStack.add(Transaction.Add(id = transactionId)) },
+            onEdit = { backStack.add(Transaction.Add(id = key.id)) },
+            onDelete = { description -> backStack.add(Transaction.Delete(key.id, description)) },
+        )
+    }
+
+    navigation<Transaction.Delete>(metadata = DialogSceneStrategy.dialog()) { key ->
+        val backStack = LocalNavBackStack.current
+        DeleteTransactionScreen(
+            transactionId = key.id,
+            description = key.description,
+            onDismiss = { backStack.removeLastOrNull() },
+            onDeleted = {
+                backStack.removeLastOrNull()
+                if (backStack.lastOrNull() is Transaction.Detail) {
+                    backStack.removeLastOrNull()
+                }
+            },
         )
     }
 }

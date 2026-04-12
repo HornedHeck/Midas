@@ -87,4 +87,10 @@ class TransactionsRepo(
             )
         }
     }
+
+    override suspend fun deleteTransaction(id: Long) {
+        withContext(ioContext) {
+            db.entryQueries.deleteById(id)
+        }
+    }
 }

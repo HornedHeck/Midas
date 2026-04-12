@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.toLocalDateTime
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.error_amount_zero
@@ -27,11 +28,10 @@ import kotlin.math.min
 import kotlin.time.Clock
 
 class AddTransactionViewModel(
+    private val transactionId: Long?,
     private val transactionsRepo: ITransactionsRepo,
     private val categoriesRepo: ICategoriesRepo,
 ) : ViewModel() {
-
-    private var transactionId: Long? = null
 
     private val _state = MutableStateFlow(
         AddTransactionFormState(
@@ -40,38 +40,38 @@ class AddTransactionViewModel(
     )
     val state: StateFlow<AddTransactionFormState> = _state.asStateFlow()
 
+    // TODO explain to Copilot how to write Event pipes
     private val _savedEvent = Channel<Unit>(Channel.CONFLATED)
     val savedEvent: Flow<Unit> = _savedEvent.receiveAsFlow()
 
     init {
         loadCategories()
+        transactionId?.let { loadTransaction(it) }
     }
 
     @Suppress("MagicNumber")
-    fun init(id: Long?) {
-        if (transactionId == null && id != null) {
-            transactionId = id
-            viewModelScope.launch {
-                runCatching { transactionsRepo.getTransactionById(id) }
-                    .onSuccess { details ->
-                        details?.let { d ->
-                            val isExpense = d.amountCents < 0
-                            val absAmount = abs(d.amountCents)
-                            val amountText = "${absAmount / 100}.${(absAmount % 100).toString().padStart(2, '0')}"
-                            _state.update { current ->
-                                current.copy(
-                                    isExpense = isExpense,
-                                    amountText = amountText,
-                                    description = d.description,
-                                    date = d.datetime.date,
-                                    originalTime = d.datetime.time,
-                                    selectedCategoryId = d.categoryId,
-                                    notes = d.notes.orEmpty(),
-                                )
-                            }
+    private fun loadTransaction(id: Long) {
+        viewModelScope.launch {
+            runCatching { transactionsRepo.getTransactionById(id) }
+                .onSuccess { details ->
+                    details?.let { d ->
+                        val isExpense = d.amountCents < 0
+                        val absAmount = abs(d.amountCents)
+                        val amountText =
+                            "${absAmount / 100}.${(absAmount % 100).toString().padStart(2, '0')}"
+                        _state.update { current ->
+                            current.copy(
+                                isExpense = isExpense,
+                                amountText = amountText,
+                                description = d.description,
+                                date = d.datetime.date,
+                                originalTime = d.datetime.time,
+                                selectedCategoryId = d.categoryId,
+                                notes = d.notes.orEmpty(),
+                            )
                         }
                     }
-            }
+                }
         }
     }
 
@@ -116,64 +116,65 @@ class AddTransactionViewModel(
         _state.update { it.copy(generalError = null) }
     }
 
-    @Suppress("ReturnCount", "CognitiveComplexMethod")
+    // TODO refactor this and state to get rid of 2 fields to store datetime
     fun save() {
-        val current = _state.value
-        var hasError = false
-
-        if (current.description.isBlank()) {
-            _state.update { it.copy(descriptionError = Res.string.error_description_required) }
-            hasError = true
-        }
-
-        val amountCents = parseAmountToCents(current.amountText)
-        if (amountCents == null) {
-            _state.update { it.copy(amountError = Res.string.error_invalid_amount) }
-            hasError = true
-        } else if (amountCents == 0L) {
-            _state.update { it.copy(amountError = Res.string.error_amount_zero) }
-            hasError = true
-        }
-
-        if (hasError) return
-
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            runCatching {
-                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                val time = current.originalTime ?: now.time
-                val datetime = LocalDateTime(current.date, time)
-                val signedAmount = if (current.isExpense) -(amountCents!!) else amountCents!!
-                val currentId = transactionId
-                if (currentId != null) {
-                    transactionsRepo.updateTransaction(
-                        id = currentId,
-                        datetime = datetime,
-                        amountCents = signedAmount,
-                        description = current.description.trim(),
-                        categoryId = current.selectedCategoryId,
-                        notes = current.notes.ifBlank { null },
-                    )
-                } else {
-                    transactionsRepo.addTransaction(
-                        datetime = datetime,
-                        amountCents = signedAmount,
-                        description = current.description.trim(),
-                        categoryId = current.selectedCategoryId,
-                        notes = current.notes.ifBlank { null },
-                    )
+        if (!validate()) return
+        val amountCents = parseAmountToCents(_state.value.amountText) ?: return
+        with(_state.value) {
+            viewModelScope.launch {
+                _state.update { it.copy(isLoading = true) }
+                runCatching {
+                    val time = originalTime ?: Clock.System
+                        .now()
+                        .toLocalDateTime(TimeZone.currentSystemDefault()).time
+                    val datetime = LocalDateTime(date, time)
+                    val signedAmount = if (isExpense) -amountCents else amountCents
+                    val notes = notes.ifBlank { null }
+                    val description = description.trim()
+                    if (transactionId != null) {
+                        transactionsRepo.updateTransaction(
+                            id = transactionId,
+                            datetime = datetime,
+                            amountCents = signedAmount,
+                            description = description,
+                            categoryId = selectedCategoryId,
+                            notes = notes,
+                        )
+                    } else {
+                        transactionsRepo.addTransaction(
+                            datetime = datetime,
+                            amountCents = signedAmount,
+                            description = description,
+                            categoryId = selectedCategoryId,
+                            notes = notes,
+                        )
+                    }
+                }.onSuccess {
+                    _savedEvent.send(Unit)
+                }.onFailure {
+                    val errorRes = if (transactionId != null) {
+                        Res.string.error_update_transaction_failed
+                    } else {
+                        Res.string.error_save_transaction_failed
+                    }
+                    _state.update { it.copy(isLoading = false, generalError = errorRes) }
                 }
-            }.onSuccess {
-                _savedEvent.send(Unit)
-            }.onFailure { _ ->
-                val errorRes = if (transactionId != null) {
-                    Res.string.error_update_transaction_failed
-                } else {
-                    Res.string.error_save_transaction_failed
-                }
-                _state.update { it.copy(isLoading = false, generalError = errorRes) }
             }
         }
+    }
+
+    private fun validate(): Boolean {
+        val current = _state.value
+        val amountCents = parseAmountToCents(current.amountText)
+        val descriptionError =
+            if (current.description.isBlank()) Res.string.error_description_required else null
+        val amountError = when (amountCents) {
+            null -> Res.string.error_invalid_amount
+            0L -> Res.string.error_amount_zero
+            else -> null
+        }
+        _state.update { it.copy(descriptionError = descriptionError, amountError = amountError) }
+        return descriptionError == null && amountError == null
     }
 
     @Suppress("MagicNumber")
@@ -190,4 +191,3 @@ class AddTransactionViewModel(
         }
     }
 }
-

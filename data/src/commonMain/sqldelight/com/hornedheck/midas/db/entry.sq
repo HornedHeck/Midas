@@ -66,3 +66,6 @@ SET datetime = :datetime,
     notes = :notes,
     category_source = :categorySource
 WHERE id = :id;
+
+deleteById:
+DELETE FROM entry WHERE id = :id;
