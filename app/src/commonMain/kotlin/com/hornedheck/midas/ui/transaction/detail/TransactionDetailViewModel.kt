@@ -3,32 +3,29 @@ package com.hornedheck.midas.ui.transaction.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class TransactionDetailViewModel(
+    private val transactionId: Long,
     private val transactionsRepo: ITransactionsRepo,
 ) : ViewModel() {
-
-    private var transactionId: Long? = null
 
     private val _state = MutableStateFlow<TransactionDetailState>(TransactionDetailState.Loading)
     val state: StateFlow<TransactionDetailState> = _state.asStateFlow()
 
-    fun init(id: Long) {
-        if (transactionId != id) {
-            transactionId = id
-            load()
-        }
+    init {
+        load()
     }
 
     fun load() {
-        val id = transactionId ?: return
         viewModelScope.launch {
             _state.value = TransactionDetailState.Loading
-            runCatching { transactionsRepo.getTransactionById(id) }
+            runCatching { transactionsRepo.getTransactionById(transactionId) }
                 .onSuccess { details ->
                     if (details == null) {
                         _state.value = TransactionDetailState.Error("")

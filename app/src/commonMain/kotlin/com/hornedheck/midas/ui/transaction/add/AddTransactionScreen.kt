@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -45,9 +48,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hornedheck.midas.util.formatDate
 import com.hornedheck.midas.theme.AppDimens
+import com.hornedheck.midas.util.formatDate
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -68,6 +72,7 @@ import midas.app.generated.resources.screen_edit_transaction
 import midas.app.generated.resources.type_expense
 import midas.app.generated.resources.type_income
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -79,12 +84,20 @@ fun AddTransactionScreen(
     transactionId: Long? = null,
     viewModel: AddTransactionViewModel = koinViewModel(parameters = { parametersOf(transactionId) }),
 ) {
-    val state = viewModel.state.collectAsStateWithLifecycle().value
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(state) {
-        if (state is AddTransactionState.Saved) {
-            viewModel.clearSaved()
-            onBack()
+    LaunchedEffect(state.saveStatus) {
+        when (val status = state.saveStatus) {
+            is SaveStatus.Success -> {
+                onBack()
+                viewModel.clearSaved()
+            }
+            is SaveStatus.Error -> {
+                snackbarHostState.showSnackbar(getString(status.message))
+                viewModel.clearSaveError()
+            }
+            else -> Unit
         }
     }
 
@@ -93,13 +106,10 @@ fun AddTransactionScreen(
         isEditMode = transactionId != null,
         onBack = onBack,
         onToggleType = viewModel::updateIsExpense,
-        onAmountChange = viewModel::updateAmount,
-        onDescriptionChange = viewModel::updateDescription,
         onDateChange = viewModel::updateDate,
         onCategoryChange = viewModel::updateCategory,
-        onNotesChange = viewModel::updateNotes,
         onSave = viewModel::save,
-        onErrorShown = viewModel::clearSaveError,
+        snackbarHostState = snackbarHostState,
     )
 }
 
@@ -110,27 +120,12 @@ fun AddTransactionScreen(
     isEditMode: Boolean = false,
     onBack: () -> Unit = {},
     onToggleType: (Boolean) -> Unit = {},
-    onAmountChange: (String) -> Unit = {},
-    onDescriptionChange: (String) -> Unit = {},
     onDateChange: (LocalDate) -> Unit = {},
     onCategoryChange: (String?) -> Unit = {},
-    onNotesChange: (String) -> Unit = {},
     onSave: () -> Unit = {},
-    onErrorShown: () -> Unit = {},
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-    val form = state.form
-    val isLoading = state is AddTransactionState.Saving
-
-    val snackbarHostState = remember { SnackbarHostState() }
-    val saveErrorText = form.saveError?.let { stringResource(it) }
-
-    LaunchedEffect(form.saveError) {
-        saveErrorText?.let {
-            snackbarHostState.showSnackbar(it)
-            onErrorShown()
-        }
-    }
-    var showDatePicker by remember { mutableStateOf(false) }
+    val isLoading = state.saveStatus is SaveStatus.Loading
 
     Scaffold(
         topBar = {
@@ -160,24 +155,11 @@ fun AddTransactionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            state = form,
+            form = state.form,
+            enabled = !isLoading,
             onToggleType = onToggleType,
-            onAmountChange = onAmountChange,
-            onDescriptionChange = onDescriptionChange,
-            onPickerOpen = { showDatePicker = true },
+            onDateChange = onDateChange,
             onCategoryChange = onCategoryChange,
-            onNotesChange = onNotesChange,
-        )
-    }
-
-    if (showDatePicker) {
-        TransactionDatePickerDialog(
-            currentDate = form.date,
-            onDateSelected = { date ->
-                onDateChange(date)
-                showDatePicker = false
-            },
-            onDismiss = { showDatePicker = false },
         )
     }
 }
@@ -206,14 +188,12 @@ private fun SaveButton(isLoading: Boolean, onSave: () -> Unit) {
 
 @Composable
 private fun AddTransactionFormContent(
-    modifier: Modifier = Modifier,
-    state: AddTransactionFormData,
+    modifier: Modifier,
+    form: AddTransactionFormData,
+    enabled: Boolean,
     onToggleType: (Boolean) -> Unit,
-    onAmountChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    onPickerOpen: () -> Unit,
+    onDateChange: (LocalDate) -> Unit,
     onCategoryChange: (String?) -> Unit,
-    onNotesChange: (String) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -221,38 +201,31 @@ private fun AddTransactionFormContent(
             .padding(AppDimens.spacing4x),
         verticalArrangement = Arrangement.spacedBy(AppDimens.spacing3x),
     ) {
-        TypeToggle(isExpense = state.isExpense, onToggle = onToggleType)
+        TypeToggle(isExpense = form.isExpense, enabled = enabled, onToggle = onToggleType)
 
-        AmountField(
-            value = state.amountText,
-            error = state.amountError,
-            onValueChange = onAmountChange
+        AmountField(state = form.amountState, error = form.amountError, enabled = enabled)
+
+        DescriptionField(
+            state = form.descriptionState,
+            error = form.descriptionError,
+            enabled = enabled
         )
 
-        OutlinedTextField(
-            value = state.description,
-            onValueChange = onDescriptionChange,
-            label = { Text(stringResource(Res.string.label_description)) },
-            isError = state.descriptionError != null,
-            supportingText = state.descriptionError?.let { res -> { Text(stringResource(res)) } },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-        )
-
-        DateField(date = state.date, onPickerOpen = onPickerOpen)
+        DateSection(date = form.date, enabled = enabled, onDateChange = onDateChange)
 
         CategoryDropdown(
-            categories = state.categories,
-            selectedId = state.selectedCategoryId,
+            categories = form.categories,
+            selectedId = form.selectedCategoryId,
+            enabled = enabled,
             onCategorySelected = onCategoryChange,
         )
 
         OutlinedTextField(
-            value = state.notes,
-            onValueChange = onNotesChange,
+            state = form.notesState,
             label = { Text(stringResource(Res.string.label_notes)) },
             modifier = Modifier.fillMaxWidth(),
-            minLines = 3,
+            lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 3),
+            enabled = enabled,
         )
     }
 }
@@ -261,6 +234,7 @@ private fun AddTransactionFormContent(
 @Composable
 private fun TypeToggle(
     isExpense: Boolean,
+    enabled: Boolean,
     onToggle: (Boolean) -> Unit,
 ) {
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -269,6 +243,7 @@ private fun TypeToggle(
             onClick = { onToggle(true) },
             shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
             icon = { SegmentedButtonDefaults.Icon(isExpense) },
+            enabled = enabled,
         ) {
             Text(stringResource(Res.string.type_expense))
         }
@@ -277,37 +252,99 @@ private fun TypeToggle(
             onClick = { onToggle(false) },
             shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
             icon = { SegmentedButtonDefaults.Icon(!isExpense) },
+            enabled = enabled,
         ) {
             Text(stringResource(Res.string.type_income))
         }
     }
 }
 
+private const val DECIMAL_PLACES = 2
+
+private val DecimalInputTransformation = InputTransformation {
+    val text = toString()
+    val filtered = text.filter { it.isDigit() || it == '.' }
+
+    val dotIndex = filtered.indexOf('.')
+    val oneDot = if (dotIndex == -1) filtered
+    else filtered.substring(0, dotIndex + 1) + filtered
+        .substring(dotIndex + 1)
+        .filter { it.isDigit() }
+
+    val constrained = if (dotIndex != -1 && oneDot.length - dotIndex > DECIMAL_PLACES + 1) {
+        oneDot.substring(0, dotIndex + DECIMAL_PLACES + 1)
+    } else {
+        oneDot
+    }
+
+    if (constrained != text) replace(0, length, constrained)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AmountField(
-    value: String,
+    state: TextFieldState,
     error: StringResource?,
-    onValueChange: (String) -> Unit,
+    enabled: Boolean,
 ) {
     OutlinedTextField(
-        value = value,
-        onValueChange = { input ->
-            val filtered = input.filter { it.isDigit() || it == '.' }
-            if (filtered.count { it == '.' } <= 1) onValueChange(filtered)
-        },
+        state = state,
         label = { Text(stringResource(Res.string.label_amount)) },
         prefix = { Text("$") },
-        keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        inputTransformation = DecimalInputTransformation,
         isError = error != null,
         supportingText = error?.let { res -> { Text(stringResource(res)) } },
         modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
+        enabled = enabled,
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DescriptionField(
+    state: TextFieldState,
+    error: StringResource?,
+    enabled: Boolean,
+) {
+    OutlinedTextField(
+        state = state,
+        label = { Text(stringResource(Res.string.label_description)) },
+        isError = error != null,
+        supportingText = error?.let { res -> { Text(stringResource(res)) } },
+        modifier = Modifier.fillMaxWidth(),
+        lineLimits = TextFieldLineLimits.SingleLine,
+        enabled = enabled,
+    )
+}
+
+@Composable
+private fun DateSection(
+    date: LocalDate,
+    enabled: Boolean,
+    onDateChange: (LocalDate) -> Unit,
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    DateField(date = date, enabled = enabled, onPickerOpen = { showDatePicker = true })
+
+    if (showDatePicker) {
+        TransactionDatePickerDialog(
+            currentDate = date,
+            onDateSelected = { selected ->
+                onDateChange(selected)
+                showDatePicker = false
+            },
+            onDismiss = { showDatePicker = false },
+        )
+    }
 }
 
 @Composable
 private fun DateField(
     date: LocalDate,
+    enabled: Boolean,
     onPickerOpen: () -> Unit,
 ) {
     Box {
@@ -321,11 +358,12 @@ private fun DateField(
             },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            enabled = enabled,
         )
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .clickable(onClick = onPickerOpen),
+                .clickable(onClick = onPickerOpen, enabled = enabled),
         )
     }
 }
@@ -335,6 +373,7 @@ private fun DateField(
 private fun CategoryDropdown(
     categories: List<CategoryOption>,
     selectedId: String?,
+    enabled: Boolean,
     onCategorySelected: (String?) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -342,22 +381,23 @@ private fun CategoryDropdown(
         ?: stringResource(Res.string.hint_none)
 
     ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
+        expanded = expanded && enabled,
+        onExpandedChange = { if (enabled) expanded = it },
     ) {
         OutlinedTextField(
             value = selectedName,
             onValueChange = {},
             readOnly = true,
             label = { Text(stringResource(Res.string.label_category)) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded && enabled) },
             modifier = Modifier
                 .fillMaxWidth()
                 .exposedDropdownSize()
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+            enabled = enabled,
         )
         ExposedDropdownMenu(
-            expanded = expanded,
+            expanded = expanded && enabled,
             onDismissRequest = { expanded = false },
         ) {
             DropdownMenuItem(
@@ -379,6 +419,8 @@ private fun CategoryDropdown(
         }
     }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

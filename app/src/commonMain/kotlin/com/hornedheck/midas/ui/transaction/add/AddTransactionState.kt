@@ -1,7 +1,6 @@
 package com.hornedheck.midas.ui.transaction.add
 
-import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.Stable
+import androidx.compose.foundation.text.input.TextFieldState
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import org.jetbrains.compose.resources.StringResource
@@ -11,27 +10,28 @@ data class CategoryOption(
     val name: String,
 )
 
-@Immutable
 data class AddTransactionFormData(
     val isExpense: Boolean = true,
-    val amountText: String = "0.0",
-    val description: String = "",
     val date: LocalDate,
     val originalTime: LocalTime? = null,
     val categories: List<CategoryOption> = emptyList(),
     val selectedCategoryId: String? = null,
-    val notes: String = "",
-    val descriptionError: StringResource? = null,
     val amountError: StringResource? = null,
-    val saveError: StringResource? = null,
+    val descriptionError: StringResource? = null,
+    val amountState: TextFieldState = TextFieldState(initialText = "0.0"),
+    val descriptionState: TextFieldState = TextFieldState(),
+    val notesState: TextFieldState = TextFieldState(),
 )
 
-sealed interface AddTransactionState {
-    val form: AddTransactionFormData
-
-    data class Editing(override val form: AddTransactionFormData) : AddTransactionState
-
-    data class Saving(override val form: AddTransactionFormData) : AddTransactionState
-
-    data class Saved(override val form: AddTransactionFormData) : AddTransactionState
+sealed interface SaveStatus {
+    data object Idle : SaveStatus
+    data object Loading : SaveStatus
+    data object Success : SaveStatus
+    data class Error(val message: StringResource) : SaveStatus
 }
+
+data class AddTransactionState(
+    val form: AddTransactionFormData,
+    val saveStatus: SaveStatus = SaveStatus.Idle,
+)
+

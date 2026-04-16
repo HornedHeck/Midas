@@ -51,6 +51,7 @@ import midas.app.generated.resources.cd_add_transaction
 import midas.app.generated.resources.cd_delete
 import midas.app.generated.resources.empty_transactions
 import midas.app.generated.resources.error_loading_transactions
+import midas.app.generated.resources.hint_none
 import midas.app.generated.resources.screen_transactions
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -66,6 +67,7 @@ fun TransactionListScreen(
     viewModel: TransactionListViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+
     TransactionListScreen(
         state = state,
         onAddTransaction = onAddTransaction,
@@ -74,7 +76,7 @@ fun TransactionListScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionListScreen(
     state: TransactionListState,
@@ -271,7 +273,7 @@ private fun TransactionItem(item: TransactionUiItem, onClick: () -> Unit) {
             Text(item.description, style = MaterialTheme.typography.bodyLarge)
         },
         supportingContent = {
-            Text(item.categoryName ?: "None", style = MaterialTheme.typography.bodySmall)
+            Text(item.categoryName ?: stringResource(Res.string.hint_none), style = MaterialTheme.typography.bodySmall)
         },
         trailingContent = {
             Text(

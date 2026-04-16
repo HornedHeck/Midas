@@ -1,5 +1,4 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -120,4 +119,12 @@ compose.desktop {
 koinCompiler {
     // https://github.com/InsertKoinIO/koin/issues/2400
     compileSafety = false
+}
+
+composeCompiler {
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    metricsDestination = layout.buildDirectory.dir("compose_compiler")
+    stabilityConfigurationFiles = listOf(
+        rootProject.layout.projectDirectory.file("misc/stability_config.conf"),
+    )
 }

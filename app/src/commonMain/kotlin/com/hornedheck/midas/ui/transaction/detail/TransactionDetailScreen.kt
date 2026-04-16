@@ -25,7 +25,6 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +50,7 @@ import midas.app.generated.resources.type_expense
 import midas.app.generated.resources.type_income
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun TransactionDetailScreen(
@@ -58,11 +58,9 @@ fun TransactionDetailScreen(
     onBack: () -> Unit = {},
     onEdit: () -> Unit = {},
     onDelete: (description: String) -> Unit = {},
-    viewModel: TransactionDetailViewModel = koinViewModel(),
+    viewModel: TransactionDetailViewModel = koinViewModel { parametersOf(transactionId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
-    LaunchedEffect(transactionId) { viewModel.init(transactionId) }
 
     TransactionDetailScreen(
         state = state,

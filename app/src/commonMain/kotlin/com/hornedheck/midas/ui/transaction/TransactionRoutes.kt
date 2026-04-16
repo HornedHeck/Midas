@@ -18,7 +18,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 import org.koin.plugin.module.dsl.buildViewModel
-import org.koin.plugin.module.dsl.viewModel
 
 @Serializable
 sealed interface Transaction : NavKey {
@@ -43,7 +42,7 @@ val transactionModule = module {
     }
 
     buildViewModel(AddTransactionViewModel::class) { (id: Long?) -> AddTransactionViewModel(id, get(), get()) }
-    viewModel<TransactionDetailViewModel>()
+    buildViewModel(TransactionDetailViewModel::class) { (id: Long) -> TransactionDetailViewModel(id, get()) }
     buildViewModel(DeleteTransactionViewModel::class) { (id: Long) -> DeleteTransactionViewModel(id, get()) }
 
     navigation<Transaction.Add> {

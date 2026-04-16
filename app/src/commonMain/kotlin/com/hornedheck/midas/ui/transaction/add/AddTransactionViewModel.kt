@@ -1,5 +1,6 @@
 package com.hornedheck.midas.ui.transaction.add
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
@@ -7,6 +8,8 @@ import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -29,8 +32,8 @@ class AddTransactionViewModel(
     private val categoriesRepo: ICategoriesRepo,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<AddTransactionState>(
-        AddTransactionState.Editing(
+    private val _state = MutableStateFlow(
+        AddTransactionState(
             form = AddTransactionFormData(
                 date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
             )
@@ -39,6 +42,17 @@ class AddTransactionViewModel(
     val state: StateFlow<AddTransactionState> = _state.asStateFlow()
 
     init {
+        val form = _state.value.form
+        viewModelScope.launch {
+            snapshotFlow { form.amountState.text.toString() }
+                .drop(1)
+                .collectLatest { updateForm { copy(amountError = null) } }
+        }
+        viewModelScope.launch {
+            snapshotFlow { form.descriptionState.text.toString() }
+                .drop(1)
+                .collectLatest { updateForm { copy(descriptionError = null) } }
+        }
         loadCategories()
         transactionId?.let { loadTransaction(it) }
     }
@@ -49,19 +63,24 @@ class AddTransactionViewModel(
             runCatching { transactionsRepo.getTransactionById(id) }
                 .onSuccess { details ->
                     details?.let { d ->
+                        val current = _state.value
+                        val isBusy = current.saveStatus is SaveStatus.Loading
+                            || current.saveStatus is SaveStatus.Success
+                        if (isBusy) return@let
                         val isExpense = d.amountCents < 0
                         val absAmount = abs(d.amountCents)
                         val amountText =
                             "${absAmount / 100}.${(absAmount % 100).toString().padStart(2, '0')}"
-                        updateEditing {
+                        val form = current.form
+                        form.amountState.edit { replace(0, length, amountText) }
+                        form.descriptionState.edit { replace(0, length, d.description) }
+                        form.notesState.edit { replace(0, length, d.notes.orEmpty()) }
+                        updateForm {
                             copy(
                                 isExpense = isExpense,
-                                amountText = amountText,
-                                description = d.description,
                                 date = d.datetime.date,
                                 originalTime = d.datetime.time,
                                 selectedCategoryId = d.categoryId,
-                                notes = d.notes.orEmpty(),
                             )
                         }
                     }
@@ -73,75 +92,57 @@ class AddTransactionViewModel(
         viewModelScope.launch {
             runCatching { categoriesRepo.getCategories() }
                 .onSuccess { categories ->
-                    updateEditing {
+                    updateForm {
                         copy(categories = categories.map { c -> CategoryOption(c.id, c.name) })
                     }
                 }
         }
+
     }
 
-    private fun updateEditing(transform: AddTransactionFormData.() -> AddTransactionFormData) {
+    private fun updateForm(transform: AddTransactionFormData.() -> AddTransactionFormData) {
         _state.update { current ->
-            when (current) {
-                is AddTransactionState.Editing -> current.copy(form = current.form.transform())
-                is AddTransactionState.Saving -> current.copy(form = current.form.transform())
-                is AddTransactionState.Saved -> current
-            }
+            if (current.saveStatus is SaveStatus.Success) current
+            else current.copy(form = current.form.transform())
         }
     }
 
     fun updateIsExpense(isExpense: Boolean) {
-        updateEditing { copy(isExpense = isExpense) }
-    }
-
-    fun updateAmount(amountText: String) {
-        updateEditing { copy(amountText = amountText, amountError = null) }
-    }
-
-    fun updateDescription(description: String) {
-        updateEditing { copy(description = description, descriptionError = null) }
+        updateForm { copy(isExpense = isExpense) }
     }
 
     fun updateDate(date: LocalDate) {
-        updateEditing { copy(date = date) }
+        updateForm { copy(date = date) }
     }
 
     fun updateCategory(categoryId: String?) {
-        updateEditing { copy(selectedCategoryId = categoryId) }
-    }
-
-    fun updateNotes(notes: String) {
-        updateEditing { copy(notes = notes) }
+        updateForm { copy(selectedCategoryId = categoryId) }
     }
 
     fun clearSaveError() {
-        updateEditing { copy(saveError = null) }
+        _state.update { it.copy(saveStatus = SaveStatus.Idle) }
     }
 
     fun clearSaved() {
-        val current = _state.value
-        if (current is AddTransactionState.Saved) {
-            _state.value = AddTransactionState.Editing(current.form)
-        }
+        _state.update { it.copy(saveStatus = SaveStatus.Idle) }
     }
 
     // TODO refactor this and state to get rid of 2 fields to store datetime
     fun save() {
         val current = _state.value
-        if (current !is AddTransactionState.Editing) return
-        if (!validate(current)) return
-        val form = current.form
-        val amountCents = parseAmountToCents(form.amountText) ?: return
+        if (current.saveStatus is SaveStatus.Loading || current.saveStatus is SaveStatus.Success || !validate()) return
+        val form = _state.value.form
+        val amountCents = parseAmountToCents(form.amountState.text.toString()) ?: return
         viewModelScope.launch {
-            _state.value = AddTransactionState.Saving(form)
+            _state.update { it.copy(saveStatus = SaveStatus.Loading) }
             runCatching {
                 val time = form.originalTime ?: Clock.System
                     .now()
                     .toLocalDateTime(TimeZone.currentSystemDefault()).time
                 val datetime = LocalDateTime(form.date, time)
                 val signedAmount = if (form.isExpense) -amountCents else amountCents
-                val notes = form.notes.ifBlank { null }
-                val description = form.description.trim()
+                val notes = form.notesState.text.toString().ifBlank { null }
+                val description = form.descriptionState.text.toString().trim()
                 if (transactionId != null) {
                     transactionsRepo.updateTransaction(
                         id = transactionId,
@@ -161,31 +162,29 @@ class AddTransactionViewModel(
                     )
                 }
             }.onSuccess {
-                _state.value = AddTransactionState.Saved(form)
+                _state.update { it.copy(saveStatus = SaveStatus.Success) }
             }.onFailure {
                 val errorRes = if (transactionId != null) {
                     Res.string.error_update_transaction_failed
                 } else {
                     Res.string.error_save_transaction_failed
                 }
-                _state.value = AddTransactionState.Editing(form.copy(saveError = errorRes))
+                _state.update { it.copy(saveStatus = SaveStatus.Error(errorRes)) }
             }
         }
     }
 
-    private fun validate(current: AddTransactionState.Editing): Boolean {
-        val form = current.form
-        val amountCents = parseAmountToCents(form.amountText)
+    private fun validate(): Boolean {
+        val form = _state.value.form
+        val amountCents = parseAmountToCents(form.amountState.text.toString())
         val descriptionError =
-            if (form.description.isBlank()) Res.string.error_description_required else null
+            if (form.descriptionState.text.isBlank()) Res.string.error_description_required else null
         val amountError = when (amountCents) {
             null -> Res.string.error_invalid_amount
             0L -> Res.string.error_amount_zero
             else -> null
         }
-        _state.value = AddTransactionState.Editing(
-            form.copy(descriptionError = descriptionError, amountError = amountError)
-        )
+        updateForm { copy(descriptionError = descriptionError, amountError = amountError) }
         return descriptionError == null && amountError == null
     }
 
@@ -197,9 +196,9 @@ class AddTransactionViewModel(
             trimmed.substring(0, min(dotIndex + 3, trimmed.length))
                 .padEnd(dotIndex + 3, '0')
                 .replace(".", "")
-                .toLong()
+                .toLongOrNull()
         } else {
-            trimmed.toLong() * 100
+            trimmed.toLongOrNull()?.let { it * 100 }
         }
     }
 }

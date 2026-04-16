@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hornedheck.midas.theme.AppDimens
@@ -29,16 +30,17 @@ import org.koin.core.parameter.parametersOf
 fun DeleteTransactionScreen(
     transactionId: Long,
     description: String,
-    onDismiss: () -> Unit,
-    onDeleted: () -> Unit,
+    onDismiss: () -> Unit = {},
+    onDeleted: () -> Unit = {},
     viewModel: DeleteTransactionViewModel = koinViewModel(parameters = { parametersOf(transactionId) }),
 ) {
-    val state = viewModel.state.collectAsStateWithLifecycle().value
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state) {
-        if (state is DeleteTransactionState.Success) {
-            viewModel.clearSuccess()
+    val isSuccess = state is DeleteTransactionState.Success
+    LaunchedEffect(isSuccess) {
+        if (isSuccess) {
             onDeleted()
+            viewModel.clearSuccess()
         }
     }
 

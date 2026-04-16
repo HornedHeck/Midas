@@ -6,10 +6,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-
-private const val SYSTEM_BAR_SCRIM_COLOR = 0xFFFFFF
 
 class MainActivity : ComponentActivity() {
 
