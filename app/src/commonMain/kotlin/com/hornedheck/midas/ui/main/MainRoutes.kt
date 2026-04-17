@@ -4,12 +4,16 @@ package com.hornedheck.midas.ui.main
 
 import androidx.navigation3.runtime.NavKey
 import com.hornedheck.midas.ui.navigation.LocalNavBackStack
+import com.hornedheck.midas.ui.category.Category
+import com.hornedheck.midas.ui.category.list.CategoriesListScreen
+import com.hornedheck.midas.ui.category.list.CategoriesListViewModel
 import com.hornedheck.midas.ui.transaction.Transaction
 import com.hornedheck.midas.ui.transaction.list.TransactionListScreen
 import com.hornedheck.midas.ui.transaction.list.TransactionListViewModel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclassesOfSealed
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
@@ -54,8 +58,14 @@ val mainModule = module {
             onTransactionDelete = { id, description -> backStack.add(Transaction.Delete(id, description)) },
         )
     }
+    viewModel<CategoriesListViewModel>()
     navigation<Main.CategoriesList> {
-        /* View Here */
+        val backStack = LocalNavBackStack.current
+        CategoriesListScreen(
+            onAddCategory = { backStack.add(Category.Edit()) },
+            onItemClick = { id -> backStack.add(Category.Edit(id)) },
+            onItemDelete = { id, name -> backStack.add(Category.Delete(id, name)) },
+        )
     }
     navigation<Main.Settings> {
         /* View Here */

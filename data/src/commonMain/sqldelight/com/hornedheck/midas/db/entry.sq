@@ -8,7 +8,7 @@ CREATE TABLE entry (
     description            TEXT    NOT NULL,
     raw_description        TEXT    NOT NULL,
     normalized_description TEXT,
-    category_id            TEXT    REFERENCES category(id),
+    category_id            INTEGER REFERENCES category(id),
     notes                  TEXT,
     is_manual              INTEGER NOT NULL DEFAULT 0,
     category_source        INTEGER AS CategorySource NOT NULL DEFAULT 0,
@@ -69,3 +69,6 @@ WHERE id = :id;
 
 deleteById:
 DELETE FROM entry WHERE id = :id;
+
+nullOutCategoryId:
+UPDATE entry SET category_id = NULL WHERE category_id = :categoryId;

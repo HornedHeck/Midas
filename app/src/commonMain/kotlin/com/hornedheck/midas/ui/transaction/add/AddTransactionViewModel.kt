@@ -90,14 +90,12 @@ class AddTransactionViewModel(
 
     private fun loadCategories() {
         viewModelScope.launch {
-            runCatching { categoriesRepo.getCategories() }
-                .onSuccess { categories ->
-                    updateForm {
-                        copy(categories = categories.map { c -> CategoryOption(c.id, c.name) })
-                    }
+            categoriesRepo.getCategories().collect { categories ->
+                updateForm {
+                    copy(categories = categories.map { c -> CategoryOption(c.id, c.name) })
                 }
+            }
         }
-
     }
 
     private fun updateForm(transform: AddTransactionFormData.() -> AddTransactionFormData) {
@@ -115,7 +113,7 @@ class AddTransactionViewModel(
         updateForm { copy(date = date) }
     }
 
-    fun updateCategory(categoryId: String?) {
+    fun updateCategory(categoryId: Long?) {
         updateForm { copy(selectedCategoryId = categoryId) }
     }
 

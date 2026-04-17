@@ -11,7 +11,7 @@ interface ITransactionsRepo {
         datetime: LocalDateTime,
         amountCents: Long,
         description: String,
-        categoryId: String?,
+        categoryId: Long?,
         notes: String?,
     )
 
@@ -22,7 +22,7 @@ interface ITransactionsRepo {
         datetime: LocalDateTime,
         amountCents: Long,
         description: String,
-        categoryId: String?,
+        categoryId: Long?,
         notes: String?,
     )
 

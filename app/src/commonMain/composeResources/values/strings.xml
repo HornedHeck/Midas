@@ -40,6 +40,21 @@
     <string name="error_delete_transaction_failed">Failed to delete transaction</string>
     <string name="cd_delete">Delete transaction</string>
 
+    <!-- Categories screens -->
+    <string name="screen_categories">Categories</string>
+    <string name="screen_create_category">Create Category</string>
+    <string name="screen_edit_category">Edit Category</string>
+    <string name="label_name">Name</string>
+    <string name="label_color">Color</string>
+    <string name="error_name_required">Name is required</string>
+    <string name="error_save_category_failed">Failed to save category</string>
+    <string name="error_delete_category_failed">Failed to delete category</string>
+    <string name="error_loading_categories">Failed to load categories</string>
+    <string name="empty_categories">No categories yet\nTap + to create your first one</string>
+    <string name="dialog_delete_category_title">Remove category?</string>
+    <string name="dialog_delete_category_body">Category "%1$s" will be permanently removed.</string>
+    <string name="cd_add_category">Add category</string>
+
     <string-array name="days_of_week">
         <item>Monday</item>
         <item>Tuesday</item>

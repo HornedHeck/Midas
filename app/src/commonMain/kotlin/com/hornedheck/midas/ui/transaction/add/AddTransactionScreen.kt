@@ -121,7 +121,7 @@ fun AddTransactionScreen(
     onBack: () -> Unit = {},
     onToggleType: (Boolean) -> Unit = {},
     onDateChange: (LocalDate) -> Unit = {},
-    onCategoryChange: (String?) -> Unit = {},
+    onCategoryChange: (Long?) -> Unit = {},
     onSave: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
@@ -193,7 +193,7 @@ private fun AddTransactionFormContent(
     enabled: Boolean,
     onToggleType: (Boolean) -> Unit,
     onDateChange: (LocalDate) -> Unit,
-    onCategoryChange: (String?) -> Unit,
+    onCategoryChange: (Long?) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -372,9 +372,9 @@ private fun DateField(
 @Composable
 private fun CategoryDropdown(
     categories: List<CategoryOption>,
-    selectedId: String?,
+    selectedId: Long?,
     enabled: Boolean,
-    onCategorySelected: (String?) -> Unit,
+    onCategorySelected: (Long?) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val selectedName = categories.find { it.id == selectedId }?.name

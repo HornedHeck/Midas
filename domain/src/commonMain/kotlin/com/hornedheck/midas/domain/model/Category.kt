@@ -1,7 +1,7 @@
 package com.hornedheck.midas.domain.model
 
 data class Category(
-    val id: String,
+    val id: Long,
     val name: String,
     val color: Int,
 )

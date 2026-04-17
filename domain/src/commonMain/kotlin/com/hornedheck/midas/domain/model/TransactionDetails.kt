@@ -7,7 +7,7 @@ data class TransactionDetails(
     val datetime: LocalDateTime,
     val amountCents: Long,
     val description: String,
-    val categoryId: String?,
+    val categoryId: Long?,
     val categoryName: String?,
     val notes: String?,
     val categoryColor: Int?,

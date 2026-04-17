@@ -6,7 +6,7 @@ import kotlinx.datetime.LocalTime
 import org.jetbrains.compose.resources.StringResource
 
 data class CategoryOption(
-    val id: String,
+    val id: Long,
     val name: String,
 )
 
@@ -15,7 +15,7 @@ data class AddTransactionFormData(
     val date: LocalDate,
     val originalTime: LocalTime? = null,
     val categories: List<CategoryOption> = emptyList(),
-    val selectedCategoryId: String? = null,
+    val selectedCategoryId: Long? = null,
     val amountError: StringResource? = null,
     val descriptionError: StringResource? = null,
     val amountState: TextFieldState = TextFieldState(initialText = "0.0"),

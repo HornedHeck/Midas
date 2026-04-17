@@ -35,7 +35,7 @@ class TransactionsRepo(
         datetime: LocalDateTime,
         amountCents: Long,
         description: String,
-        categoryId: String?,
+        categoryId: Long?,
         notes: String?,
     ) {
         withContext(ioContext) {
@@ -72,7 +72,7 @@ class TransactionsRepo(
         datetime: LocalDateTime,
         amountCents: Long,
         description: String,
-        categoryId: String?,
+        categoryId: Long?,
         notes: String?,
     ) {
         withContext(ioContext) {

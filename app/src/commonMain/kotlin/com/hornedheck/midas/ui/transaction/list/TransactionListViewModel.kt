@@ -4,14 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hornedheck.midas.domain.model.Transaction
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
+import com.hornedheck.midas.util.SUBSCRIPTION_TIMEOUT
 import com.hornedheck.midas.util.formatAmount
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-
-private const val SUBSCRIPTION_TIMEOUT = 5_000L
 
 class TransactionListViewModel(
     repo: ITransactionsRepo,

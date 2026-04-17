@@ -1,12 +1,25 @@
 import kotlin.Int;
 
 CREATE TABLE category (
-    id           TEXT    PRIMARY KEY NOT NULL,
-    name         TEXT    NOT NULL,
-    icon         TEXT    NOT NULL,
-    color        INTEGER AS Int NOT NULL,
-    budget_limit INTEGER
+    id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    name  TEXT    NOT NULL,
+    color INTEGER AS Int NOT NULL
 );
 
 selectAll:
 SELECT id, name, color FROM category ORDER BY name;
+
+selectById:
+SELECT id, name, color FROM category WHERE id = :id;
+
+insert:
+INSERT INTO category (name, color) VALUES (:name, :color);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+updateById:
+UPDATE category SET name = :name, color = :color WHERE id = :id;
+
+deleteById:
+DELETE FROM category WHERE id = :id;
