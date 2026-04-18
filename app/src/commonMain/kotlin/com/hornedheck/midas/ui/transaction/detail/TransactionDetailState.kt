@@ -4,7 +4,7 @@ import kotlinx.datetime.LocalDate
 
 sealed interface TransactionDetailState {
     data object Loading : TransactionDetailState
-    data class Error(val message: String) : TransactionDetailState
+    data object Error : TransactionDetailState
     data class Content(
         val id: Long,
         val amountCents: Long,

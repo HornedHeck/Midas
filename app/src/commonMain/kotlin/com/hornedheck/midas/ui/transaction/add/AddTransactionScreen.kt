@@ -186,6 +186,7 @@ private fun SaveButton(isLoading: Boolean, onSave: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddTransactionFormContent(
     modifier: Modifier,

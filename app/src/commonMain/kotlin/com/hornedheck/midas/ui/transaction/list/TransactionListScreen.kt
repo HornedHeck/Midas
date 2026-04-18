@@ -10,9 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -23,13 +21,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.theme.MidasColor
 import com.hornedheck.midas.ui.components.ColorDot
+import com.hornedheck.midas.ui.components.FullScreenEmptyText
+import com.hornedheck.midas.ui.components.FullScreenErrorText
+import com.hornedheck.midas.ui.components.FullScreenLoading
 import com.hornedheck.midas.ui.components.SwipeToDeleteBox
 import com.hornedheck.midas.ui.navigation.BottomNavBar
 import com.hornedheck.midas.util.formatDate
@@ -89,45 +88,19 @@ fun TransactionListScreen(
                 .padding(paddingValues),
         ) {
             when (state) {
-                is TransactionListState.Loading -> TransactionListLoading()
-                is TransactionListState.Empty -> TransactionListEmpty()
+                is TransactionListState.Loading -> FullScreenLoading()
+                is TransactionListState.Empty -> FullScreenEmptyText(stringResource(Res.string.empty_transactions))
                 is TransactionListState.Content -> TransactionListContent(
                     state.groups,
                     onTransactionClick,
                     onTransactionDelete
                 )
 
-                is TransactionListState.Error -> TransactionListError(state.message)
+                is TransactionListState.Error -> FullScreenErrorText(
+                    state.message.ifEmpty { stringResource(Res.string.error_loading_transactions) }
+                )
             }
         }
-    }
-}
-
-@Composable
-private fun TransactionListEmpty() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = AppDimens.spacing2x),
-        contentAlignment = Alignment.TopCenter,
-    ) {
-        Text(
-            text = stringResource(Res.string.empty_transactions),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun TransactionListLoading() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularWavyProgressIndicator()
     }
 }
 
@@ -173,19 +146,6 @@ private fun TransactionListContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun TransactionListError(message: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = message.ifEmpty { stringResource(Res.string.error_loading_transactions) },
-            color = MaterialTheme.colorScheme.error,
-        )
     }
 }
 

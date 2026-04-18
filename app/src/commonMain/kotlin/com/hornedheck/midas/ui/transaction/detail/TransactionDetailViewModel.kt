@@ -3,9 +3,7 @@ package com.hornedheck.midas.ui.transaction.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -22,13 +20,13 @@ class TransactionDetailViewModel(
         load()
     }
 
-    fun load() {
+    private fun load() {
         viewModelScope.launch {
             _state.value = TransactionDetailState.Loading
             runCatching { transactionsRepo.getTransactionById(transactionId) }
                 .onSuccess { details ->
                     if (details == null) {
-                        _state.value = TransactionDetailState.Error("")
+                        _state.value = TransactionDetailState.Error
                     } else {
                         _state.value = TransactionDetailState.Content(
                             id = details.id,
@@ -41,7 +39,7 @@ class TransactionDetailViewModel(
                         )
                     }
                 }
-                .onFailure { _state.value = TransactionDetailState.Error("") }
+                .onFailure { _state.value = TransactionDetailState.Error }
         }
     }
 }

@@ -44,12 +44,6 @@ class EditCategoryViewModel(
         }
     }
 
-    fun clearError() {
-        if (_state.value.status is EditCategoryStatus.Error) {
-            _state.update { it.copy(status = EditCategoryStatus.Idle) }
-        }
-    }
-
     fun save() {
         val current = _state.value
         if (current.status is EditCategoryStatus.Loading || current.status is EditCategoryStatus.Success) return

@@ -9,11 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -24,12 +20,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.ui.components.ColorDot
+import com.hornedheck.midas.ui.components.FullScreenEmptyText
+import com.hornedheck.midas.ui.components.FullScreenErrorText
+import com.hornedheck.midas.ui.components.FullScreenLoading
 import com.hornedheck.midas.ui.components.SwipeToDeleteBox
 import com.hornedheck.midas.ui.navigation.BottomNavBar
 import midas.app.generated.resources.Res
@@ -87,57 +84,18 @@ fun CategoriesListScreen(
                 .padding(paddingValues),
         ) {
             when (state) {
-                is CategoriesListState.Loading -> CategoriesListLoading()
-                is CategoriesListState.Empty -> CategoriesListEmpty()
+                is CategoriesListState.Loading -> FullScreenLoading()
+                is CategoriesListState.Empty -> FullScreenEmptyText(stringResource(Res.string.empty_categories))
                 is CategoriesListState.Content -> CategoriesListContent(
                     items = state.items,
                     onItemClick = onItemClick,
                     onItemDelete = onItemDelete,
                 )
-                is CategoriesListState.Error -> CategoriesListError(state.message)
+                is CategoriesListState.Error -> FullScreenErrorText(
+                    state.message.ifEmpty { stringResource(Res.string.error_loading_categories) }
+                )
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun CategoriesListLoading() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        CircularWavyProgressIndicator()
-    }
-}
-
-@Composable
-private fun CategoriesListEmpty() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = AppDimens.spacing2x),
-        contentAlignment = Alignment.TopCenter,
-    ) {
-        Text(
-            text = stringResource(Res.string.empty_categories),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-    }
-}
-
-@Composable
-private fun CategoriesListError(message: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = message.ifEmpty { stringResource(Res.string.error_loading_categories) },
-            color = MaterialTheme.colorScheme.error,
-        )
     }
 }
 
