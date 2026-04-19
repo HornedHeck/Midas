@@ -9,6 +9,10 @@ import com.hornedheck.midas.ui.category.delete.DeleteCategoryViewModel
 import com.hornedheck.midas.ui.category.edit.EditCategoryScreen
 import com.hornedheck.midas.ui.category.edit.EditCategoryViewModel
 import com.hornedheck.midas.ui.navigation.LocalNavBackStack
+import com.hornedheck.midas.ui.rules.edit.EditRuleScreen
+import com.hornedheck.midas.ui.rules.edit.EditRuleViewModel
+import com.hornedheck.midas.ui.rules.list.RulesListScreen
+import com.hornedheck.midas.ui.rules.list.RulesListViewModel
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -16,7 +20,7 @@ import kotlinx.serialization.modules.subclassesOfSealed
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
-import org.koin.plugin.module.dsl.buildViewModel
+import org.koin.plugin.module.dsl.viewModel
 
 @Serializable
 sealed interface Category : NavKey {
@@ -43,8 +47,11 @@ val categoryModule = module {
         }
     }
 
-    buildViewModel(EditCategoryViewModel::class) { (id: Long?) -> EditCategoryViewModel(id, get()) }
-    buildViewModel(DeleteCategoryViewModel::class) { (id: Long) -> DeleteCategoryViewModel(id, get()) }
+    // TODO koin skill
+    viewModel<EditCategoryViewModel>()
+    viewModel<DeleteCategoryViewModel>()
+    viewModel<RulesListViewModel>()
+    viewModel<EditRuleViewModel>()
 
     navigation<Category.Edit>(metadata = DialogSceneStrategy.dialog()) { key ->
         val backStack = LocalNavBackStack.current
@@ -66,10 +73,22 @@ val categoryModule = module {
     }
 
     navigation<Category.RulesList> {
-        /* View Here */
+        val backStack = LocalNavBackStack.current
+        RulesListScreen(
+            onBack = { backStack.removeLastOrNull() },
+            onAddRule = { backStack.add(Category.RuleEdit()) },
+            onRuleClick = { id -> backStack.add(Category.RuleEdit(id)) },
+        )
     }
-    navigation<Category.RuleEdit> {
-        /* View Here */
+
+    navigation<Category.RuleEdit> { key ->
+        val backStack = LocalNavBackStack.current
+        EditRuleScreen(
+            ruleId = key.id,
+            onBack = { backStack.removeLastOrNull() },
+            onSaved = { backStack.removeLastOrNull() },
+        )
     }
 }
+
 

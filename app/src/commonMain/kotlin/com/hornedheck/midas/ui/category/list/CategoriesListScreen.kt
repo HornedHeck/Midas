@@ -8,11 +8,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.Rule
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Rule
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -31,6 +35,7 @@ import com.hornedheck.midas.ui.components.SwipeToDeleteBox
 import com.hornedheck.midas.ui.navigation.BottomNavBar
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.cd_add_category
+import midas.app.generated.resources.cd_rules
 import midas.app.generated.resources.empty_categories
 import midas.app.generated.resources.error_loading_categories
 import midas.app.generated.resources.screen_categories
@@ -42,6 +47,7 @@ fun CategoriesListScreen(
     onAddCategory: () -> Unit = {},
     onItemClick: (id: Long) -> Unit = {},
     onItemDelete: (id: Long, name: String) -> Unit = { _, _ -> },
+    onRulesClick: () -> Unit = {},
     viewModel: CategoriesListViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -51,6 +57,7 @@ fun CategoriesListScreen(
         onAddCategory = onAddCategory,
         onItemClick = onItemClick,
         onItemDelete = onItemDelete,
+        onRulesClick = onRulesClick,
     )
 }
 
@@ -61,11 +68,20 @@ fun CategoriesListScreen(
     onAddCategory: () -> Unit = {},
     onItemClick: (id: Long) -> Unit = {},
     onItemDelete: (id: Long, name: String) -> Unit = { _, _ -> },
+    onRulesClick: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.screen_categories)) },
+                actions = {
+                    IconButton(onClick = onRulesClick) {
+                        Icon(
+                            Icons.AutoMirrored.Default.Rule,
+                            contentDescription = stringResource(Res.string.cd_rules),
+                        )
+                    }
+                },
             )
         },
         bottomBar = { BottomNavBar() },

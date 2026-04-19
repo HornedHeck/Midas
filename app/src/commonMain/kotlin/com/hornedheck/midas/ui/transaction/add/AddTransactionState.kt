@@ -1,6 +1,7 @@
 package com.hornedheck.midas.ui.transaction.add
 
 import androidx.compose.foundation.text.input.TextFieldState
+import com.hornedheck.midas.domain.model.CategorySource
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import org.jetbrains.compose.resources.StringResource
@@ -16,6 +17,7 @@ data class AddTransactionFormData(
     val originalTime: LocalTime? = null,
     val categories: List<CategoryOption> = emptyList(),
     val selectedCategoryId: Long? = null,
+    val categorySource: CategorySource = CategorySource.AUTO,
     val amountError: StringResource? = null,
     val descriptionError: StringResource? = null,
     val amountState: TextFieldState = TextFieldState(initialText = "0.0"),

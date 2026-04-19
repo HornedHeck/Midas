@@ -3,7 +3,9 @@ package com.hornedheck.midas.ui.transaction.add
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hornedheck.midas.domain.model.CategorySource
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
+import com.hornedheck.midas.domain.repository.IRuleMatcher
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,11 +27,13 @@ import midas.app.generated.resources.error_update_transaction_failed
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.time.Clock
+import org.koin.core.annotation.InjectedParam
 
 class AddTransactionViewModel(
-    private val transactionId: Long?,
+    @InjectedParam private val transactionId: Long?,
     private val transactionsRepo: ITransactionsRepo,
     private val categoriesRepo: ICategoriesRepo,
+    private val ruleMatcher: IRuleMatcher,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -46,12 +50,16 @@ class AddTransactionViewModel(
         viewModelScope.launch {
             snapshotFlow { form.amountState.text.toString() }
                 .drop(1)
-                .collectLatest { updateForm { copy(amountError = null) } }
+                .collectLatest {
+                    updateForm { copy(amountError = null) }
+                }
         }
         viewModelScope.launch {
             snapshotFlow { form.descriptionState.text.toString() }
                 .drop(1)
-                .collectLatest { updateForm { copy(descriptionError = null) } }
+                .collectLatest {
+                    updateForm { copy(descriptionError = null) }
+                }
         }
         loadCategories()
         transactionId?.let { loadTransaction(it) }
@@ -81,6 +89,7 @@ class AddTransactionViewModel(
                                 date = d.datetime.date,
                                 originalTime = d.datetime.time,
                                 selectedCategoryId = d.categoryId,
+                                categorySource = d.categorySource,
                             )
                         }
                     }
@@ -114,7 +123,11 @@ class AddTransactionViewModel(
     }
 
     fun updateCategory(categoryId: Long?) {
-        updateForm { copy(selectedCategoryId = categoryId) }
+        updateForm { copy(selectedCategoryId = categoryId, categorySource = CategorySource.MANUAL) }
+    }
+
+    fun setAutoCategory() {
+        updateForm { copy(selectedCategoryId = null, categorySource = CategorySource.AUTO) }
     }
 
     fun clearSaveError() {
@@ -141,22 +154,35 @@ class AddTransactionViewModel(
                 val signedAmount = if (form.isExpense) -amountCents else amountCents
                 val notes = form.notesState.text.toString().ifBlank { null }
                 val description = form.descriptionState.text.toString().trim()
+
+                val categorySource = form.categorySource
+                val (resolvedCategoryId, resolvedSource) = if (categorySource != CategorySource.MANUAL) {
+                    val matched = runCatching {
+                        ruleMatcher.match(description, signedAmount)
+                    }.getOrNull()
+                    matched to CategorySource.AUTO
+                } else {
+                    form.selectedCategoryId to CategorySource.MANUAL
+                }
+
                 if (transactionId != null) {
                     transactionsRepo.updateTransaction(
                         id = transactionId,
                         datetime = datetime,
                         amountCents = signedAmount,
                         description = description,
-                        categoryId = form.selectedCategoryId,
+                        categoryId = resolvedCategoryId,
                         notes = notes,
+                        categorySource = resolvedSource,
                     )
                 } else {
                     transactionsRepo.addTransaction(
                         datetime = datetime,
                         amountCents = signedAmount,
                         description = description,
-                        categoryId = form.selectedCategoryId,
+                        categoryId = resolvedCategoryId,
                         notes = notes,
+                        categorySource = resolvedSource,
                     )
                 }
             }.onSuccess {

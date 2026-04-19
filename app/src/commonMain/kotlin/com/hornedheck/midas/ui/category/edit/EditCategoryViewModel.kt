@@ -11,9 +11,10 @@ import kotlinx.coroutines.launch
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.error_name_required
 import midas.app.generated.resources.error_save_category_failed
+import org.koin.core.annotation.InjectedParam
 
 class EditCategoryViewModel(
-    private val id: Long?,
+    @InjectedParam private val id: Long?,
     private val repo: ICategoriesRepo,
 ) : ViewModel() {
 

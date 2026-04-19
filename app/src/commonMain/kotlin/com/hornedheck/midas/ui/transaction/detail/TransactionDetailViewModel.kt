@@ -7,9 +7,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 
 class TransactionDetailViewModel(
-    private val transactionId: Long,
+    @InjectedParam private val transactionId: Long,
     private val transactionsRepo: ITransactionsRepo,
 ) : ViewModel() {
 

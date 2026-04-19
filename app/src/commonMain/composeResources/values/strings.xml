@@ -26,6 +26,7 @@
     <string name="label_description">Description*</string>
     <string name="label_date">Date*</string>
     <string name="label_category">Category</string>
+    <string name="label_category_auto">Auto</string>
     <string name="label_notes">Notes</string>
     <string name="hint_none">None</string>
     <string name="action_save">Save</string>
@@ -53,7 +54,38 @@
     <string name="empty_categories">No categories yet\nTap + to create your first one</string>
     <string name="dialog_delete_category_title">Remove category?</string>
     <string name="dialog_delete_category_body">Category "%1$s" will be permanently removed.</string>
+    <plurals name="dialog_delete_category_rules_warning">
+        <item quantity="one">%1$d rule associated with this category will also be deleted.</item>
+        <item quantity="other">%1$d rules associated with this category will also be deleted.</item>
+    </plurals>
     <string name="cd_add_category">Add category</string>
+
+    <!-- Rules screens -->
+    <string name="screen_rules">Rules</string>
+    <string name="screen_add_rule">Add Rule</string>
+    <string name="screen_edit_rule">Edit Rule</string>
+    <string name="cd_add_rule">Add rule</string>
+    <string name="cd_rules">Rules</string>
+    <string name="cd_reapply_rules">Re-apply rules</string>
+    <string name="cd_drag_handle">Drag to reorder</string>
+    <string name="cd_move_up">Move up</string>
+    <string name="cd_move_down">Move down</string>
+    <string name="label_rule_type">Type</string>
+    <string name="label_rule_value">Value</string>
+    <string name="label_rule_target_category">Target category</string>
+    <string name="label_rule_amount_from">From</string>
+    <string name="label_rule_amount_to">To</string>
+    <string name="rule_type_text_contains">Text Contains</string>
+    <string name="rule_type_text_equals">Text Equal</string>
+    <string name="rule_type_regex">Regex</string>
+    <string name="rule_type_amount_range">Amount Range</string>
+    <string name="error_rule_value_required">Value is required</string>
+    <string name="error_rule_invalid_regex">Invalid regex pattern</string>
+    <string name="error_rule_invalid_amount_range">Invalid amount range</string>
+    <string name="error_save_rule_failed">Failed to save rule</string>
+    <string name="error_loading_rules">Failed to load rules</string>
+    <string name="empty_rules">No rules yet\nTap + to create your first one</string>
+    <string name="error_reapply_failed">Failed to re-apply rules</string>
 
     <string-array name="days_of_week">
         <item>Monday</item>

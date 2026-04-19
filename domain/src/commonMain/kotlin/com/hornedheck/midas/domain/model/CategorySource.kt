@@ -1,7 +1,6 @@
-package com.hornedheck.midas.data.db.model
+package com.hornedheck.midas.domain.model
 
 enum class CategorySource {
-    NONE,
     AUTO,
     MANUAL,
 }

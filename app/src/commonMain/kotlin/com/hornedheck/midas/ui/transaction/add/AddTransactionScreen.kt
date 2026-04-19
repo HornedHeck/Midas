@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hornedheck.midas.domain.model.CategorySource
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.util.formatDate
 import kotlinx.datetime.LocalDate
@@ -64,6 +65,7 @@ import midas.app.generated.resources.cd_back
 import midas.app.generated.resources.hint_none
 import midas.app.generated.resources.label_amount
 import midas.app.generated.resources.label_category
+import midas.app.generated.resources.label_category_auto
 import midas.app.generated.resources.label_date
 import midas.app.generated.resources.label_description
 import midas.app.generated.resources.label_notes
@@ -108,6 +110,7 @@ fun AddTransactionScreen(
         onToggleType = viewModel::updateIsExpense,
         onDateChange = viewModel::updateDate,
         onCategoryChange = viewModel::updateCategory,
+        onAutoCategory = viewModel::setAutoCategory,
         onSave = viewModel::save,
         snackbarHostState = snackbarHostState,
     )
@@ -122,6 +125,7 @@ fun AddTransactionScreen(
     onToggleType: (Boolean) -> Unit = {},
     onDateChange: (LocalDate) -> Unit = {},
     onCategoryChange: (Long?) -> Unit = {},
+    onAutoCategory: () -> Unit = {},
     onSave: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
@@ -160,6 +164,7 @@ fun AddTransactionScreen(
             onToggleType = onToggleType,
             onDateChange = onDateChange,
             onCategoryChange = onCategoryChange,
+            onAutoCategory = onAutoCategory,
         )
     }
 }
@@ -195,6 +200,7 @@ private fun AddTransactionFormContent(
     onToggleType: (Boolean) -> Unit,
     onDateChange: (LocalDate) -> Unit,
     onCategoryChange: (Long?) -> Unit,
+    onAutoCategory: () -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -217,8 +223,10 @@ private fun AddTransactionFormContent(
         CategoryDropdown(
             categories = form.categories,
             selectedId = form.selectedCategoryId,
+            categorySource = form.categorySource,
             enabled = enabled,
             onCategorySelected = onCategoryChange,
+            onAutoSelected = onAutoCategory,
         )
 
         OutlinedTextField(
@@ -374,12 +382,18 @@ private fun DateField(
 private fun CategoryDropdown(
     categories: List<CategoryOption>,
     selectedId: Long?,
+    categorySource: CategorySource,
     enabled: Boolean,
     onCategorySelected: (Long?) -> Unit,
+    onAutoSelected: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val selectedName = categories.find { it.id == selectedId }?.name
-        ?: stringResource(Res.string.hint_none)
+    val autoLabel = stringResource(Res.string.label_category_auto)
+    val selectedName = when {
+        categorySource != CategorySource.MANUAL -> autoLabel
+        else -> categories.find { it.id == selectedId }?.name
+            ?: stringResource(Res.string.hint_none)
+    }
 
     ExposedDropdownMenuBox(
         expanded = expanded && enabled,
@@ -401,6 +415,13 @@ private fun CategoryDropdown(
             expanded = expanded && enabled,
             onDismissRequest = { expanded = false },
         ) {
+            DropdownMenuItem(
+                text = { Text(autoLabel) },
+                onClick = {
+                    onAutoSelected()
+                    expanded = false
+                },
+            )
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.hint_none)) },
                 onClick = {

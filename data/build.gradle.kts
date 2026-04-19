@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.androidLint)
     alias(libs.plugins.sqldelight)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -50,6 +51,12 @@ kotlin {
 
                 // SQLDelight
                 implementation(libs.sqldelight.coroutines)
+
+                // DataStore
+                implementation(libs.datastore.preferences.core)
+
+                // Serialization
+                implementation(libs.kotlinx.serialization.json)
 
                 // Domain
                 implementation(projects.midas.domain)

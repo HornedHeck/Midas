@@ -65,6 +65,7 @@ val mainModule = module {
             onAddCategory = { backStack.add(Category.Edit()) },
             onItemClick = { id -> backStack.add(Category.Edit(id)) },
             onItemDelete = { id, name -> backStack.add(Category.Delete(id, name)) },
+            onRulesClick = { backStack.add(Category.RulesList) },
         )
     }
     navigation<Main.Settings> {

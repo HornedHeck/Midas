@@ -6,13 +6,16 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.hornedheck.midas.db.Database
 import com.hornedheck.midas.domain.model.Category
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
+import com.hornedheck.midas.domain.repository.IRulesRepo
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.CoroutineContext
 
 class CategoriesRepo(
     private val db: Database,
     private val ioContext: CoroutineContext,
+    private val rulesRepo: IRulesRepo,
 ) : ICategoriesRepo {
 
     override fun getCategories(): Flow<List<Category>> =
@@ -42,10 +45,14 @@ class CategoriesRepo(
             db.categoryQueries.updateById(name = name, color = color, id = id)
         }
 
-    override suspend fun deleteCategory(id: Long) = withContext(ioContext) {
-        db.categoryQueries.transaction {
+    override suspend fun deleteCategory(id: Long): Int {
+        val rules = rulesRepo.getRules().first()
+        val affectedRules = rules.filter { it.categoryId == id }
+        affectedRules.forEach { rulesRepo.deleteRule(it.id) }
+        withContext(ioContext) {
             db.entryQueries.nullOutCategoryId(categoryId = id)
             db.categoryQueries.deleteById(id = id)
         }
+        return affectedRules.size
     }
 }

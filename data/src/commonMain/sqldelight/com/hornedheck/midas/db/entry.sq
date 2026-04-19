@@ -1,4 +1,4 @@
-import com.hornedheck.midas.data.db.model.CategorySource;
+import com.hornedheck.midas.domain.model.CategorySource;
 import kotlinx.datetime.LocalDateTime;
 
 CREATE TABLE entry (
@@ -14,7 +14,7 @@ CREATE TABLE entry (
     category_source        INTEGER AS CategorySource NOT NULL DEFAULT 0,
 
     CHECK (is_manual IN (0, 1)),
-    CHECK (category_source IN (0, 1, 2))
+    CHECK (category_source IN (0, 1))
 );
 
 CREATE INDEX entry_datetime_idx      ON entry(datetime);
@@ -38,7 +38,7 @@ INSERT INTO entry (
     category_id, notes, is_manual, category_source
 ) VALUES (
     :datetime, :amount, :description, :description, NULL,
-    :categoryId, :notes, 1, :categorySource
+    :categoryId, :notes, :isManual, :categorySource
 );
 
 selectById:
@@ -50,7 +50,8 @@ SELECT
     e.notes,
     e.category_id,
     c.name AS category_name,
-    c.color AS category_color
+    c.color AS category_color,
+    e.category_source
 FROM entry e
 LEFT JOIN category c ON e.category_id = c.id
 WHERE e.id = :id;
@@ -64,6 +65,7 @@ SET datetime = :datetime,
     normalized_description = NULL,
     category_id = :categoryId,
     notes = :notes,
+    is_manual = :isManual,
     category_source = :categorySource
 WHERE id = :id;
 
@@ -71,4 +73,20 @@ deleteById:
 DELETE FROM entry WHERE id = :id;
 
 nullOutCategoryId:
-UPDATE entry SET category_id = NULL WHERE category_id = :categoryId;
+UPDATE entry
+SET category_id = NULL,
+    category_source = CASE WHEN category_source = 1 THEN 1 ELSE 0 END,
+    is_manual = CASE WHEN category_source = 1 THEN 1 ELSE 0 END
+WHERE category_id = :categoryId;
+
+selectForReapply:
+SELECT id, datetime, amount, description, category_id, category_source
+FROM entry
+WHERE category_source = 0;
+
+updateCategoryById:
+UPDATE entry
+SET category_id = :categoryId,
+    category_source = :categorySource,
+    is_manual = :isManual
+WHERE id = :id;
