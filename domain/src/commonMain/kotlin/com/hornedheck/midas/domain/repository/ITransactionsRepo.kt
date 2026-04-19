@@ -10,26 +10,18 @@ import kotlinx.datetime.LocalDateTime
 
 interface ITransactionsRepo {
     fun getTransactions(): Flow<List<Transaction>>
-    suspend fun addTransaction(
+
+    suspend fun upsertTransaction(
+        id: Long?,
         datetime: LocalDateTime,
         amountCents: Long,
         description: String,
         categoryId: Long?,
         notes: String?,
-        categorySource: CategorySource = CategorySource.MANUAL,
+        categorySource: CategorySource,
     )
 
     suspend fun getTransactionById(id: Long): TransactionDetails?
-
-    suspend fun updateTransaction(
-        id: Long,
-        datetime: LocalDateTime,
-        amountCents: Long,
-        description: String,
-        categoryId: Long?,
-        notes: String?,
-        categorySource: CategorySource = CategorySource.MANUAL,
-    )
 
     suspend fun deleteTransaction(id: Long)
 

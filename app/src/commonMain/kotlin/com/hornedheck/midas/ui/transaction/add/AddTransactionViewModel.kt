@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -24,10 +23,10 @@ import midas.app.generated.resources.error_description_required
 import midas.app.generated.resources.error_invalid_amount
 import midas.app.generated.resources.error_save_transaction_failed
 import midas.app.generated.resources.error_update_transaction_failed
+import org.koin.core.annotation.InjectedParam
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.time.Clock
-import org.koin.core.annotation.InjectedParam
 
 class AddTransactionViewModel(
     @InjectedParam private val transactionId: Long?,
@@ -39,7 +38,7 @@ class AddTransactionViewModel(
     private val _state = MutableStateFlow(
         AddTransactionState(
             form = AddTransactionFormData(
-                date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
+                datetime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
             )
         )
     )
@@ -86,8 +85,7 @@ class AddTransactionViewModel(
                         updateForm {
                             copy(
                                 isExpense = isExpense,
-                                date = d.datetime.date,
-                                originalTime = d.datetime.time,
+                                datetime = d.datetime,
                                 selectedCategoryId = d.categoryId,
                                 categorySource = d.categorySource,
                             )
@@ -118,8 +116,8 @@ class AddTransactionViewModel(
         updateForm { copy(isExpense = isExpense) }
     }
 
-    fun updateDate(date: LocalDate) {
-        updateForm { copy(date = date) }
+    fun updateDatetime(datetime: LocalDateTime) {
+        updateForm { copy(datetime = datetime) }
     }
 
     fun updateCategory(categoryId: Long?) {
@@ -130,15 +128,10 @@ class AddTransactionViewModel(
         updateForm { copy(selectedCategoryId = null, categorySource = CategorySource.AUTO) }
     }
 
-    fun clearSaveError() {
+    fun clearSaveStatus() {
         _state.update { it.copy(saveStatus = SaveStatus.Idle) }
     }
 
-    fun clearSaved() {
-        _state.update { it.copy(saveStatus = SaveStatus.Idle) }
-    }
-
-    // TODO refactor this and state to get rid of 2 fields to store datetime
     fun save() {
         val current = _state.value
         if (current.saveStatus is SaveStatus.Loading || current.saveStatus is SaveStatus.Success || !validate()) return
@@ -147,10 +140,6 @@ class AddTransactionViewModel(
         viewModelScope.launch {
             _state.update { it.copy(saveStatus = SaveStatus.Loading) }
             runCatching {
-                val time = form.originalTime ?: Clock.System
-                    .now()
-                    .toLocalDateTime(TimeZone.currentSystemDefault()).time
-                val datetime = LocalDateTime(form.date, time)
                 val signedAmount = if (form.isExpense) -amountCents else amountCents
                 val notes = form.notesState.text.toString().ifBlank { null }
                 val description = form.descriptionState.text.toString().trim()
@@ -164,27 +153,15 @@ class AddTransactionViewModel(
                 } else {
                     form.selectedCategoryId to CategorySource.MANUAL
                 }
-
-                if (transactionId != null) {
-                    transactionsRepo.updateTransaction(
-                        id = transactionId,
-                        datetime = datetime,
-                        amountCents = signedAmount,
-                        description = description,
-                        categoryId = resolvedCategoryId,
-                        notes = notes,
-                        categorySource = resolvedSource,
-                    )
-                } else {
-                    transactionsRepo.addTransaction(
-                        datetime = datetime,
-                        amountCents = signedAmount,
-                        description = description,
-                        categoryId = resolvedCategoryId,
-                        notes = notes,
-                        categorySource = resolvedSource,
-                    )
-                }
+                transactionsRepo.upsertTransaction(
+                    id = transactionId,
+                    datetime = form.datetime,
+                    amountCents = signedAmount,
+                    description = description,
+                    categoryId = resolvedCategoryId,
+                    notes = notes,
+                    categorySource = resolvedSource,
+                )
             }.onSuccess {
                 _state.update { it.copy(saveStatus = SaveStatus.Success) }
             }.onFailure {

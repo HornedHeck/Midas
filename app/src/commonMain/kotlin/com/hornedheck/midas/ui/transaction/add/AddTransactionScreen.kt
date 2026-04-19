@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -18,18 +16,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -50,22 +40,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hornedheck.midas.domain.model.CategorySource
 import com.hornedheck.midas.theme.AppDimens
+import com.hornedheck.midas.ui.components.CategoryDropdown
+import com.hornedheck.midas.ui.components.SaveButton
 import com.hornedheck.midas.util.formatDate
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.action_cancel
 import midas.app.generated.resources.action_ok
-import midas.app.generated.resources.action_save
 import midas.app.generated.resources.cd_back
-import midas.app.generated.resources.hint_none
 import midas.app.generated.resources.label_amount
 import midas.app.generated.resources.label_category
-import midas.app.generated.resources.label_category_auto
 import midas.app.generated.resources.label_date
 import midas.app.generated.resources.label_description
 import midas.app.generated.resources.label_notes
@@ -93,11 +81,11 @@ fun AddTransactionScreen(
         when (val status = state.saveStatus) {
             is SaveStatus.Success -> {
                 onBack()
-                viewModel.clearSaved()
+                viewModel.clearSaveStatus()
             }
             is SaveStatus.Error -> {
                 snackbarHostState.showSnackbar(getString(status.message))
-                viewModel.clearSaveError()
+                viewModel.clearSaveStatus()
             }
             else -> Unit
         }
@@ -108,7 +96,7 @@ fun AddTransactionScreen(
         isEditMode = transactionId != null,
         onBack = onBack,
         onToggleType = viewModel::updateIsExpense,
-        onDateChange = viewModel::updateDate,
+        onDateChange = viewModel::updateDatetime,
         onCategoryChange = viewModel::updateCategory,
         onAutoCategory = viewModel::setAutoCategory,
         onSave = viewModel::save,
@@ -123,7 +111,7 @@ fun AddTransactionScreen(
     isEditMode: Boolean = false,
     onBack: () -> Unit = {},
     onToggleType: (Boolean) -> Unit = {},
-    onDateChange: (LocalDate) -> Unit = {},
+    onDateChange: (LocalDateTime) -> Unit = {},
     onCategoryChange: (Long?) -> Unit = {},
     onAutoCategory: () -> Unit = {},
     onSave: () -> Unit = {},
@@ -169,28 +157,6 @@ fun AddTransactionScreen(
     }
 }
 
-@Composable
-private fun SaveButton(isLoading: Boolean, onSave: () -> Unit) {
-    Box(modifier = Modifier.padding(AppDimens.spacing4x)) {
-        Button(
-            onClick = onSave,
-            modifier = Modifier.fillMaxWidth(),
-            shape = CircleShape,
-            enabled = !isLoading,
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(AppDimens.spacing4x),
-                    strokeWidth = AppDimens.spacing1x,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
-            } else {
-                Text(stringResource(Res.string.action_save))
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddTransactionFormContent(
@@ -198,7 +164,7 @@ private fun AddTransactionFormContent(
     form: AddTransactionFormData,
     enabled: Boolean,
     onToggleType: (Boolean) -> Unit,
-    onDateChange: (LocalDate) -> Unit,
+    onDateChange: (LocalDateTime) -> Unit,
     onCategoryChange: (Long?) -> Unit,
     onAutoCategory: () -> Unit,
 ) {
@@ -218,13 +184,14 @@ private fun AddTransactionFormContent(
             enabled = enabled
         )
 
-        DateSection(date = form.date, enabled = enabled, onDateChange = onDateChange)
+        DateSection(datetime = form.datetime, enabled = enabled, onDateChange = onDateChange)
 
         CategoryDropdown(
             categories = form.categories,
             selectedId = form.selectedCategoryId,
             categorySource = form.categorySource,
             enabled = enabled,
+            label = Res.string.label_category,
             onCategorySelected = onCategoryChange,
             onAutoSelected = onAutoCategory,
         )
@@ -268,7 +235,7 @@ private fun TypeToggle(
     }
 }
 
-private const val DECIMAL_PLACES = 2
+private const val DecimalPlaces = 2
 
 private val DecimalInputTransformation = InputTransformation {
     val text = toString()
@@ -280,8 +247,8 @@ private val DecimalInputTransformation = InputTransformation {
         .substring(dotIndex + 1)
         .filter { it.isDigit() }
 
-    val constrained = if (dotIndex != -1 && oneDot.length - dotIndex > DECIMAL_PLACES + 1) {
-        oneDot.substring(0, dotIndex + DECIMAL_PLACES + 1)
+    val constrained = if (dotIndex != -1 && oneDot.length - dotIndex > DecimalPlaces + 1) {
+        oneDot.substring(0, dotIndex + DecimalPlaces + 1)
     } else {
         oneDot
     }
@@ -330,19 +297,19 @@ private fun DescriptionField(
 
 @Composable
 private fun DateSection(
-    date: LocalDate,
+    datetime: LocalDateTime,
     enabled: Boolean,
-    onDateChange: (LocalDate) -> Unit,
+    onDateChange: (LocalDateTime) -> Unit,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
 
-    DateField(date = date, enabled = enabled, onPickerOpen = { showDatePicker = true })
+    DateField(datetime = datetime, enabled = enabled, onPickerOpen = { showDatePicker = true })
 
     if (showDatePicker) {
         TransactionDatePickerDialog(
-            currentDate = date,
-            onDateSelected = { selected ->
-                onDateChange(selected)
+            currentDatetime = datetime,
+            onDateSelected = { selectedDate ->
+                onDateChange(selectedDate)
                 showDatePicker = false
             },
             onDismiss = { showDatePicker = false },
@@ -352,13 +319,13 @@ private fun DateSection(
 
 @Composable
 private fun DateField(
-    date: LocalDate,
+    datetime: LocalDateTime,
     enabled: Boolean,
     onPickerOpen: () -> Unit,
 ) {
     Box {
         OutlinedTextField(
-            value = formatDate(date),
+            value = formatDate(datetime.date),
             onValueChange = {},
             readOnly = true,
             label = { Text(stringResource(Res.string.label_date)) },
@@ -379,81 +346,14 @@ private fun DateField(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CategoryDropdown(
-    categories: List<CategoryOption>,
-    selectedId: Long?,
-    categorySource: CategorySource,
-    enabled: Boolean,
-    onCategorySelected: (Long?) -> Unit,
-    onAutoSelected: () -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val autoLabel = stringResource(Res.string.label_category_auto)
-    val selectedName = when {
-        categorySource != CategorySource.MANUAL -> autoLabel
-        else -> categories.find { it.id == selectedId }?.name
-            ?: stringResource(Res.string.hint_none)
-    }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded && enabled,
-        onExpandedChange = { if (enabled) expanded = it },
-    ) {
-        OutlinedTextField(
-            value = selectedName,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(stringResource(Res.string.label_category)) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded && enabled) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .exposedDropdownSize()
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-            enabled = enabled,
-        )
-        ExposedDropdownMenu(
-            expanded = expanded && enabled,
-            onDismissRequest = { expanded = false },
-        ) {
-            DropdownMenuItem(
-                text = { Text(autoLabel) },
-                onClick = {
-                    onAutoSelected()
-                    expanded = false
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.hint_none)) },
-                onClick = {
-                    onCategorySelected(null)
-                    expanded = false
-                },
-            )
-            categories.forEach { category ->
-                DropdownMenuItem(
-                    text = { Text(category.name) },
-                    onClick = {
-                        onCategorySelected(category.id)
-                        expanded = false
-                    },
-                )
-            }
-        }
-    }
-}
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
 private fun TransactionDatePickerDialog(
-    currentDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit,
+    currentDatetime: LocalDateTime,
+    onDateSelected: (LocalDateTime) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = currentDate
-            .atStartOfDayIn(TimeZone.UTC)
+        initialSelectedDateMillis = currentDatetime
+            .toInstant(TimeZone.UTC)
             .toEpochMilliseconds(),
     )
 
@@ -465,7 +365,7 @@ private fun TransactionDatePickerDialog(
                     datePickerState.selectedDateMillis?.let { millis ->
                         val date = Instant
                             .fromEpochMilliseconds(millis)
-                            .toLocalDateTime(TimeZone.UTC).date
+                            .toLocalDateTime(TimeZone.UTC)
                         onDateSelected(date)
                     } ?: onDismiss()
                 },

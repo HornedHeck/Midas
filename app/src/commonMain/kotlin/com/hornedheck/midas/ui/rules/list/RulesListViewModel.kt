@@ -1,6 +1,5 @@
 package com.hornedheck.midas.ui.rules.list
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
@@ -22,8 +21,6 @@ class RulesListViewModel(
     private val _state = MutableStateFlow<RulesListState>(RulesListState.Loading)
     val state: StateFlow<RulesListState> = _state.asStateFlow()
 
-    val dragItems = mutableStateListOf<RuleUiItem>()
-
     init {
         viewModelScope.launch {
             combine(rulesRepo.getRules(), categoriesRepo.getCategories()) { rules, categories ->
@@ -40,8 +37,6 @@ class RulesListViewModel(
                 if (uiItems.isEmpty()) {
                     _state.value = RulesListState.Empty
                 } else {
-                    dragItems.clear()
-                    dragItems.addAll(uiItems)
                     val current = _state.value
                     val reapplyStatus = (current as? RulesListState.Content)?.reapplyStatus
                         ?: ReapplyStatus.Idle
@@ -57,22 +52,17 @@ class RulesListViewModel(
         }
     }
 
-    fun swapItems(from: Int, to: Int) {
-        if (from in dragItems.indices && to in dragItems.indices) {
-            val item = dragItems.removeAt(from)
-            dragItems.add(to, item)
-        }
-    }
-
     fun moveItem(from: Int, to: Int) {
-        swapItems(from, to)
-        commitReorder()
-    }
-
-    fun commitReorder() {
-        val orderedIds = dragItems.map { it.id }
+        val current = _state.value as? RulesListState.Content ?: return
+        val items = current.items.toMutableList()
+        if (from !in items.indices || to !in items.indices) return
+        val item = items.removeAt(from)
+        items.add(to, item)
+        _state.update { s ->
+            (s as? RulesListState.Content)?.copy(items = items) ?: s
+        }
         viewModelScope.launch {
-            runCatching { rulesRepo.reorderRules(orderedIds) }
+            runCatching { rulesRepo.reorderRules(items.map { it.id }) }
         }
     }
 

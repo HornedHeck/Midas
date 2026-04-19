@@ -97,31 +97,44 @@ private fun DeleteCategoryDialog(
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(Res.string.action_cancel))
-                }
-                TextButton(
-                    onClick = onConfirm,
-                    enabled = state is DeleteCategoryState.Confirm,
-                ) {
-                    if (state is DeleteCategoryState.Deleting) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(AppDimens.spacing4x),
-                            strokeWidth = AppDimens.spacing1x,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    } else {
-                        Text(
-                            text = stringResource(Res.string.action_delete),
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                }
+            DeleteCategoryDialogActions(
+                state = state,
+                onDismiss = onDismiss,
+                onConfirm = onConfirm,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DeleteCategoryDialogActions(
+    state: DeleteCategoryState,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        TextButton(onClick = onDismiss) {
+            Text(stringResource(Res.string.action_cancel))
+        }
+        TextButton(
+            onClick = onConfirm,
+            enabled = state is DeleteCategoryState.Confirm,
+        ) {
+            if (state is DeleteCategoryState.Deleting) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(AppDimens.spacing4x),
+                    strokeWidth = AppDimens.spacing1x,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            } else {
+                Text(
+                    text = stringResource(Res.string.action_delete),
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
         }
     }

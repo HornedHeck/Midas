@@ -75,7 +75,6 @@ fun RulesListScreen(
 
     RulesListScreen(
         state = state,
-        dragItems = viewModel.dragItems,
         snackbarHostState = snackbarHostState,
         onBack = onBack,
         onAddRule = onAddRule,
@@ -90,7 +89,6 @@ fun RulesListScreen(
 @Composable
 fun RulesListScreen(
     state: RulesListState,
-    dragItems: List<RuleUiItem>,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     onBack: () -> Unit = {},
     onAddRule: () -> Unit = {},
@@ -142,7 +140,7 @@ fun RulesListScreen(
                     state.message.ifEmpty { stringResource(Res.string.error_loading_rules) }
                 )
                 is RulesListState.Content -> RulesListContent(
-                    items = dragItems,
+                    items = state.items,
                     onRuleClick = onRuleClick,
                     onRuleDelete = onRuleDelete,
                     onMoveItem = onMoveItem,

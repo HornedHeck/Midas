@@ -17,8 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hornedheck.midas.theme.MidasAppTheme
 
-// TODO add Compose constants guide to the skill
 private object ColorPickerDefaults {
+
     val RippleSize = 42.dp
     val Size = 32.dp
     val FillSize = 24.dp
@@ -53,16 +53,13 @@ private fun ColorCircle(
     onClick: () -> Unit,
 ) {
     Canvas(
-        modifier = Modifier
-            .selectable(
-                selected = isSelected,
-                onClick = onClick,
-                role = Role.RadioButton,
-                interactionSource = null,
-                indication = ripple(bounded = false, radius = ColorPickerDefaults.RippleSize / 2),
-            )
-            .minimumInteractiveComponentSize()
-            .requiredSize(ColorPickerDefaults.Size),
+        modifier = Modifier.selectable(
+            selected = isSelected,
+            onClick = onClick,
+            role = Role.RadioButton,
+            interactionSource = null,
+            indication = ripple(bounded = false, radius = ColorPickerDefaults.RippleSize / 2),
+        ).minimumInteractiveComponentSize().requiredSize(ColorPickerDefaults.Size),
         contentDescription = "",
     ) {
         val stroke = ColorPickerDefaults.StrokeWidth.toPx()

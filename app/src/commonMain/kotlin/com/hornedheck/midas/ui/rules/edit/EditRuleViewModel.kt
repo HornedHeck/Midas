@@ -169,7 +169,9 @@ class EditRuleViewModel(
         }
         val from = if (fromText.isNotEmpty()) fromText.toLongOrNull() else null
         val to = if (toText.isNotEmpty()) toText.toLongOrNull() else null
-        if ((fromText.isNotEmpty() && from == null) || (toText.isNotEmpty() && to == null)) {
+        val fromInvalid = fromText.isNotEmpty() && from == null
+        val toInvalid = toText.isNotEmpty() && to == null
+        if (fromInvalid || toInvalid) {
             updateForm { copy(valueError = Res.string.error_rule_invalid_amount_range) }
             return false
         }

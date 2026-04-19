@@ -33,7 +33,8 @@ class TransactionsRepo(
         .asFlow()
         .mapToList(ioContext)
 
-    override suspend fun addTransaction(
+    override suspend fun upsertTransaction(
+        id: Long?,
         datetime: LocalDateTime,
         amountCents: Long,
         description: String,
@@ -42,15 +43,28 @@ class TransactionsRepo(
         categorySource: CategorySource,
     ) {
         withContext(ioContext) {
-            db.entryQueries.insert(
-                datetime = datetime,
-                amount = amountCents,
-                description = description,
-                categoryId = categoryId,
-                notes = notes,
-                categorySource = categorySource,
-                isManual = if (categorySource == CategorySource.MANUAL) 1L else 0L,
-            )
+            if (id == null) {
+                db.entryQueries.insert(
+                    datetime = datetime,
+                    amount = amountCents,
+                    description = description,
+                    categoryId = categoryId,
+                    notes = notes,
+                    categorySource = categorySource,
+                    isManual = categorySource.ordinal.toLong(),
+                )
+            } else {
+                db.entryQueries.update(
+                    id = id,
+                    datetime = datetime,
+                    amount = amountCents,
+                    description = description,
+                    categoryId = categoryId,
+                    notes = notes,
+                    categorySource = categorySource,
+                    isManual = categorySource.ordinal.toLong(),
+                )
+            }
         }
     }
 
@@ -76,28 +90,6 @@ class TransactionsRepo(
                 .executeAsOneOrNull()
         }
 
-    override suspend fun updateTransaction(
-        id: Long,
-        datetime: LocalDateTime,
-        amountCents: Long,
-        description: String,
-        categoryId: Long?,
-        notes: String?,
-        categorySource: CategorySource,
-    ) {
-        withContext(ioContext) {
-            db.entryQueries.update(
-                id = id,
-                datetime = datetime,
-                amount = amountCents,
-                description = description,
-                categoryId = categoryId,
-                notes = notes,
-                categorySource = categorySource,
-                isManual = if (categorySource == CategorySource.MANUAL) 1L else 0L,
-            )
-        }
-    }
 
     override suspend fun deleteTransaction(id: Long) {
         withContext(ioContext) {
@@ -130,7 +122,7 @@ class TransactionsRepo(
             db.entryQueries.updateCategoryById(
                 categoryId = categoryId,
                 categorySource = categorySource,
-                isManual = if (categorySource == CategorySource.MANUAL) 1L else 0L,
+                isManual = categorySource.ordinal.toLong(),
                 id = id,
             )
         }
@@ -143,7 +135,7 @@ class TransactionsRepo(
                     db.entryQueries.updateCategoryById(
                         categoryId = update.categoryId,
                         categorySource = update.categorySource,
-                        isManual = if (update.categorySource == CategorySource.MANUAL) 1L else 0L,
+                        isManual = update.categorySource.ordinal.toLong(),
                         id = update.id,
                     )
                 }
