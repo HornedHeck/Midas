@@ -4,16 +4,17 @@ import com.hornedheck.midas.domain.model.CategorySource
 import com.hornedheck.midas.domain.model.Transaction
 import com.hornedheck.midas.domain.model.TransactionCategoryUpdate
 import com.hornedheck.midas.domain.model.TransactionDetails
+import com.hornedheck.midas.domain.model.TransactionFilter
 import com.hornedheck.midas.domain.model.TransactionForApply
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 
 interface ITransactionsRepo {
-    fun getTransactions(): Flow<List<Transaction>>
+    fun getTransactions(filter: TransactionFilter? = null): Flow<List<Transaction>>
 
     suspend fun upsertTransaction(
         id: Long?,
-        datetime: LocalDateTime,
+        date: LocalDate,
         amountCents: Long,
         description: String,
         categoryId: Long?,

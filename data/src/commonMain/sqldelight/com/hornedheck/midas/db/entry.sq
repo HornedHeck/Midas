@@ -1,9 +1,9 @@
 import com.hornedheck.midas.domain.model.CategorySource;
-import kotlinx.datetime.LocalDateTime;
+import kotlinx.datetime.LocalDate;
 
 CREATE TABLE entry (
     id                     INTEGER PRIMARY KEY AUTOINCREMENT,
-    datetime               TEXT    AS LocalDateTime NOT NULL,
+    datetime               TEXT    AS LocalDate NOT NULL,
     amount                 INTEGER NOT NULL,
     description            TEXT    NOT NULL,
     raw_description        TEXT    NOT NULL,
@@ -26,10 +26,24 @@ SELECT
     e.datetime,
     e.amount,
     e.description,
+    e.category_id,
     c.name AS category_name,
     c.color AS category_color
 FROM entry e
 LEFT JOIN category c ON e.category_id = c.id
+WHERE (
+    (:include_expenses = 1 AND e.amount <= 0)
+    OR (:include_income = 1 AND e.amount >= 0)
+)
+AND (:date_from IS NULL OR e.datetime >= :date_from)
+AND (:date_to IS NULL OR e.datetime <= :date_to)
+AND (:amount_from_cents IS NULL OR ABS(e.amount) >= :amount_from_cents)
+AND (:amount_to_cents IS NULL OR ABS(e.amount) <= :amount_to_cents)
+AND (
+    :apply_category_filter = 0
+    OR e.category_id IN ?
+    OR (:include_uncategorized = 1 AND e.category_id IS NULL)
+)
 ORDER BY e.datetime DESC;
 
 insert:

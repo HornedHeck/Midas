@@ -20,7 +20,7 @@ private fun provideDatabase(driver: SqlDriver): Database {
         driver = driver,
         categoryAdapter = Category.Adapter(colorAdapter = ColorAdapter),
         entryAdapter = Entry.Adapter(
-            datetimeAdapter = LocalDateTimeAdapter,
+            datetimeAdapter = LocalDateAdapter,
             category_sourceAdapter = CategorySourceAdapter,
         ),
     )

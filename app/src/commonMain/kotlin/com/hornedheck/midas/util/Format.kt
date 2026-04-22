@@ -12,10 +12,28 @@ import org.jetbrains.compose.resources.stringArrayResource
 import kotlin.math.abs
 
 @Composable
-fun formatDate(date: LocalDate): String {
+fun LocalDate?.format(): String {
+    this ?: return ""
     val days = stringArrayResource(Res.array.days_of_week)
     val monthNames = stringArrayResource(Res.array.months)
-    return remember(date, days, monthNames) {
+    return remember(this, days, monthNames) {
+        val formatter = LocalDate.Format {
+            monthName(MonthNames(monthNames))
+            chars(" ")
+            day()
+            chars(", ")
+            year()
+        }
+        formatter.format(this)
+    }
+}
+
+@Composable
+fun LocalDate?.formatLong(): String {
+    this ?: return ""
+    val days = stringArrayResource(Res.array.days_of_week)
+    val monthNames = stringArrayResource(Res.array.months)
+    return remember(this, days, monthNames) {
         val formatter = LocalDate.Format {
             dayOfWeek(DayOfWeekNames(days))
             chars(", ")
@@ -23,12 +41,12 @@ fun formatDate(date: LocalDate): String {
             chars(" ")
             day()
         }
-        formatter.format(date).uppercase()
+        formatter.format(this)
     }
 }
 
 @Suppress("MagicNumber")
-fun formatAmount(amountCents: Long): String {
+fun formatAmount(amountCents: Long, withCurrency: Boolean = false): String {
     val isExpense = amountCents < 0
     val absAmount = abs(amountCents)
     val dollars = absAmount / 100
@@ -38,21 +56,12 @@ fun formatAmount(amountCents: Long): String {
         append(dollars)
         append('.')
         append(cents)
-        append(" USD")
+        if (withCurrency)
+            append(" USD")
     }
 }
 
 @Suppress("MagicNumber")
-fun formatAmountDetail(amountCents: Long): String {
-    val isExpense = amountCents < 0
-    val absAmount = abs(amountCents)
-    val dollars = absAmount / 100
-    val cents = (absAmount % 100).toString().padStart(2, '0')
-    return buildString {
-        if (isExpense) append('-')
-        append("$ ")
-        append(dollars)
-        append('.')
-        append(cents)
-    }
+fun formatAbsAmount(amountCents: Long, withCurrency: Boolean = false): String {
+    return formatAmount(abs(amountCents), withCurrency)
 }

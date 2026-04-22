@@ -33,8 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.theme.MidasColor
 import com.hornedheck.midas.util.NoOpInteractionSource
-import com.hornedheck.midas.util.formatAmountDetail
-import com.hornedheck.midas.util.formatDate
+import com.hornedheck.midas.util.format
+import com.hornedheck.midas.util.formatAmount
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.cd_back
 import midas.app.generated.resources.cd_delete
@@ -163,7 +163,7 @@ private fun TransactionDetailContent(state: TransactionDetailState.Content) {
 
         ListItem(
             overlineContent = { Text(stringResource(Res.string.label_date)) },
-            headlineContent = { Text(formatDate(state.date)) },
+            headlineContent = { Text(state.date.format()) },
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = AppDimens.spacing4x))
 
@@ -196,7 +196,7 @@ private fun AmountHeader(
         verticalArrangement = Arrangement.spacedBy(AppDimens.spacing3x),
     ) {
         Text(
-            text = formatAmountDetail(amountCents),
+            text = formatAmount(amountCents, true),
             style = MaterialTheme.typography.displayMedium,
             color = if (isExpense) MidasColor.Expense else MidasColor.Income,
         )

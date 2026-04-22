@@ -1,23 +1,17 @@
 package com.hornedheck.midas.ui.transaction.add
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -28,29 +22,20 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hornedheck.midas.theme.AppDimens
+import com.hornedheck.midas.ui.components.AmountField
 import com.hornedheck.midas.ui.components.CategoryDropdown
+import com.hornedheck.midas.ui.components.DatePickerField
 import com.hornedheck.midas.ui.components.SaveButton
-import com.hornedheck.midas.util.formatDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.LocalDate
 import midas.app.generated.resources.Res
-import midas.app.generated.resources.action_cancel
-import midas.app.generated.resources.action_ok
 import midas.app.generated.resources.cd_back
 import midas.app.generated.resources.label_amount
 import midas.app.generated.resources.label_category
@@ -66,7 +51,6 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import kotlin.time.Instant
 
 @Composable
 fun AddTransactionScreen(
@@ -96,7 +80,7 @@ fun AddTransactionScreen(
         isEditMode = transactionId != null,
         onBack = onBack,
         onToggleType = viewModel::updateIsExpense,
-        onDateChange = viewModel::updateDatetime,
+        onDateChange = viewModel::updateDate,
         onCategoryChange = viewModel::updateCategory,
         onAutoCategory = viewModel::setAutoCategory,
         onSave = viewModel::save,
@@ -111,7 +95,7 @@ fun AddTransactionScreen(
     isEditMode: Boolean = false,
     onBack: () -> Unit = {},
     onToggleType: (Boolean) -> Unit = {},
-    onDateChange: (LocalDateTime) -> Unit = {},
+    onDateChange: (LocalDate) -> Unit = {},
     onCategoryChange: (Long?) -> Unit = {},
     onAutoCategory: () -> Unit = {},
     onSave: () -> Unit = {},
@@ -164,7 +148,7 @@ private fun AddTransactionFormContent(
     form: AddTransactionFormData,
     enabled: Boolean,
     onToggleType: (Boolean) -> Unit,
-    onDateChange: (LocalDateTime) -> Unit,
+    onDateChange: (LocalDate) -> Unit,
     onCategoryChange: (Long?) -> Unit,
     onAutoCategory: () -> Unit,
 ) {
@@ -176,7 +160,13 @@ private fun AddTransactionFormContent(
     ) {
         TypeToggle(isExpense = form.isExpense, enabled = enabled, onToggle = onToggleType)
 
-        AmountField(state = form.amountState, error = form.amountError, enabled = enabled)
+        AmountField(
+            state = form.amountState,
+            label = Res.string.label_amount,
+            error = form.amountError,
+            enabled = enabled,
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         DescriptionField(
             state = form.descriptionState,
@@ -184,7 +174,7 @@ private fun AddTransactionFormContent(
             enabled = enabled
         )
 
-        DateSection(datetime = form.datetime, enabled = enabled, onDateChange = onDateChange)
+        DateSection(date = form.date, enabled = enabled, onDateChange = onDateChange)
 
         CategoryDropdown(
             categories = form.categories,
@@ -235,48 +225,6 @@ private fun TypeToggle(
     }
 }
 
-private const val DecimalPlaces = 2
-
-private val DecimalInputTransformation = InputTransformation {
-    val text = toString()
-    val filtered = text.filter { it.isDigit() || it == '.' }
-
-    val dotIndex = filtered.indexOf('.')
-    val oneDot = if (dotIndex == -1) filtered
-    else filtered.substring(0, dotIndex + 1) + filtered
-        .substring(dotIndex + 1)
-        .filter { it.isDigit() }
-
-    val constrained = if (dotIndex != -1 && oneDot.length - dotIndex > DecimalPlaces + 1) {
-        oneDot.substring(0, dotIndex + DecimalPlaces + 1)
-    } else {
-        oneDot
-    }
-
-    if (constrained != text) replace(0, length, constrained)
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AmountField(
-    state: TextFieldState,
-    error: StringResource?,
-    enabled: Boolean,
-) {
-    OutlinedTextField(
-        state = state,
-        label = { Text(stringResource(Res.string.label_amount)) },
-        prefix = { Text("$") },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        inputTransformation = DecimalInputTransformation,
-        isError = error != null,
-        supportingText = error?.let { res -> { Text(stringResource(res)) } },
-        modifier = Modifier.fillMaxWidth(),
-        lineLimits = TextFieldLineLimits.SingleLine,
-        enabled = enabled,
-    )
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DescriptionField(
@@ -297,86 +245,18 @@ private fun DescriptionField(
 
 @Composable
 private fun DateSection(
-    datetime: LocalDateTime,
+    date: LocalDate,
     enabled: Boolean,
-    onDateChange: (LocalDateTime) -> Unit,
+    onDateChange: (LocalDate) -> Unit,
 ) {
-    var showDatePicker by remember { mutableStateOf(false) }
-
-    DateField(datetime = datetime, enabled = enabled, onPickerOpen = { showDatePicker = true })
-
-    if (showDatePicker) {
-        TransactionDatePickerDialog(
-            currentDatetime = datetime,
-            onDateSelected = { selectedDate ->
-                onDateChange(selectedDate)
-                showDatePicker = false
-            },
-            onDismiss = { showDatePicker = false },
-        )
-    }
-}
-
-@Composable
-private fun DateField(
-    datetime: LocalDateTime,
-    enabled: Boolean,
-    onPickerOpen: () -> Unit,
-) {
-    Box {
-        OutlinedTextField(
-            value = formatDate(datetime.date),
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(stringResource(Res.string.label_date)) },
-            trailingIcon = {
-                Icon(Icons.Default.CalendarMonth, contentDescription = null)
-            },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = enabled,
-        )
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clickable(onClick = onPickerOpen, enabled = enabled),
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TransactionDatePickerDialog(
-    currentDatetime: LocalDateTime,
-    onDateSelected: (LocalDateTime) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = currentDatetime
-            .toInstant(TimeZone.UTC)
-            .toEpochMilliseconds(),
+    DatePickerField(
+        date = date,
+        label = stringResource(Res.string.label_date),
+        onDateChanged = { selectedDate ->
+            selectedDate?.let(onDateChange)
+        },
+        modifier = Modifier.fillMaxWidth(),
+        enabled = enabled,
+        clearable = false,
     )
-
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val date = Instant
-                            .fromEpochMilliseconds(millis)
-                            .toLocalDateTime(TimeZone.UTC)
-                        onDateSelected(date)
-                    } ?: onDismiss()
-                },
-            ) {
-                Text(stringResource(Res.string.action_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.action_cancel)) }
-        },
-    ) {
-        DatePicker(state = datePickerState)
-    }
 }

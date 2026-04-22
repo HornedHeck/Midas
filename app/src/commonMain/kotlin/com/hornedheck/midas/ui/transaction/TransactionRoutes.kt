@@ -11,12 +11,16 @@ import com.hornedheck.midas.ui.transaction.delete.DeleteTransactionScreen
 import com.hornedheck.midas.ui.transaction.delete.DeleteTransactionViewModel
 import com.hornedheck.midas.ui.transaction.detail.TransactionDetailScreen
 import com.hornedheck.midas.ui.transaction.detail.TransactionDetailViewModel
+import com.hornedheck.midas.ui.transaction.filter.TransactionFilterScreen
+import com.hornedheck.midas.ui.transaction.filter.TransactionFilterViewModel
+import com.hornedheck.midas.domain.usecase.TransactionsListUseCase
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
+import org.koin.plugin.module.dsl.single
 import org.koin.plugin.module.dsl.viewModel
 
 @Serializable
@@ -30,6 +34,9 @@ sealed interface Transaction : NavKey {
 
     @Serializable
     data class Delete(val id: Long, val description: String) : Transaction
+
+    @Serializable
+    data object Filter : Transaction
 }
 
 val transactionModule = module {
@@ -45,6 +52,8 @@ val transactionModule = module {
     viewModel<AddTransactionViewModel>()
     viewModel<TransactionDetailViewModel>()
     viewModel<DeleteTransactionViewModel>()
+    single<TransactionsListUseCase>()
+    viewModel<TransactionFilterViewModel>()
 
     navigation<Transaction.Add> {
         val backStack = LocalNavBackStack.current
@@ -76,6 +85,13 @@ val transactionModule = module {
                     backStack.removeLastOrNull()
                 }
             },
+        )
+    }
+
+    navigation<Transaction.Filter> {
+        val backStack = LocalNavBackStack.current
+        TransactionFilterScreen(
+            onBack = { backStack.removeLastOrNull() },
         )
     }
 }

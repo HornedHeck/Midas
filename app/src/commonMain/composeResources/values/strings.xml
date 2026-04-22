@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Midas</string>
     <string name="screen_transactions">Transactions</string>
+    <string name="screen_configure_filters">Configure Filters</string>
     <string name="screen_add_transaction">Add Transaction</string>
     <string name="screen_edit_transaction">Edit Transaction</string>
     <string name="screen_transaction_details">Transaction Details</string>
@@ -24,7 +25,7 @@
 
     <string name="label_amount">Amount</string>
     <string name="label_description">Description*</string>
-    <string name="label_date">Date*</string>
+    <string name="label_date">Date</string>
     <string name="label_category">Category</string>
     <string name="label_category_auto">Auto</string>
     <string name="label_notes">Notes</string>
@@ -33,8 +34,34 @@
     <string name="action_ok">OK</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_delete">Delete</string>
+    <string name="action_apply">Apply</string>
+    <string name="action_clear">Clear</string>
     <string name="type_expense">Expense</string>
     <string name="type_income">Income</string>
+
+    <!-- Filter screen -->
+    <string name="label_type">Type</string>
+    <string name="filter_type_both">Both</string>
+    <string name="filter_type_expense">Expense</string>
+    <string name="filter_type_income">Income</string>
+    <string name="label_date_from">Date From</string>
+    <string name="label_date_to">Date To</string>
+    <string name="filter_quick_this_week">This Week</string>
+    <string name="filter_quick_past_week">Past Week</string>
+    <string name="filter_quick_this_month">This Month</string>
+    <string name="filter_quick_past_month">Past Month</string>
+    <string name="label_amount_from">Amount From</string>
+    <string name="label_amount_to">Amount To</string>
+    <string name="label_categories">Categories</string>
+    <string name="hint_uncategorized">Uncategorized</string>
+    <string name="error_filter_invalid_amount_range">From must be less than or equal to To</string>
+    <string name="filter_chip_date_after">After %1$s</string>
+    <string name="filter_chip_date_before">Before %1$s</string>
+    <string name="filter_chip_amount_at_least">At least %1$s</string>
+    <string name="filter_chip_amount_at_most">At most %1$s</string>
+    <string name="empty_transactions_filtered">No transactions match the current filters</string>
+    <string name="cd_filter">Filter transactions</string>
+    <string name="cd_clear_chip">Remove filter</string>
 
     <string name="dialog_delete_transaction_title">Delete Transaction</string>
     <string name="dialog_delete_transaction_body">Transaction "%1$s" will be permanently removed. This action cannot be undone.</string>

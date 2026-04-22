@@ -56,6 +56,7 @@ val mainModule = module {
             onAddTransaction = { backStack.add(Transaction.Add()) },
             onTransactionClick = { id -> backStack.add(Transaction.Detail(id)) },
             onTransactionDelete = { id, description -> backStack.add(Transaction.Delete(id, description)) },
+            onFilterClick = { backStack.add(Transaction.Filter) },
         )
     }
     viewModel<CategoriesListViewModel>()

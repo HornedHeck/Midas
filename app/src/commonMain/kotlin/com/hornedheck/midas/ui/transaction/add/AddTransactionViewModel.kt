@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import midas.app.generated.resources.Res
@@ -38,7 +38,7 @@ class AddTransactionViewModel(
     private val _state = MutableStateFlow(
         AddTransactionState(
             form = AddTransactionFormData(
-                datetime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+                date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
             )
         )
     )
@@ -85,7 +85,7 @@ class AddTransactionViewModel(
                         updateForm {
                             copy(
                                 isExpense = isExpense,
-                                datetime = d.datetime,
+                                date = d.date,
                                 selectedCategoryId = d.categoryId,
                                 categorySource = d.categorySource,
                             )
@@ -116,8 +116,8 @@ class AddTransactionViewModel(
         updateForm { copy(isExpense = isExpense) }
     }
 
-    fun updateDatetime(datetime: LocalDateTime) {
-        updateForm { copy(datetime = datetime) }
+    fun updateDate(date: LocalDate) {
+        updateForm { copy(date = date) }
     }
 
     fun updateCategory(categoryId: Long?) {
@@ -155,7 +155,7 @@ class AddTransactionViewModel(
                 }
                 transactionsRepo.upsertTransaction(
                     id = transactionId,
-                    datetime = form.datetime,
+                    date = form.date,
                     amountCents = signedAmount,
                     description = description,
                     categoryId = resolvedCategoryId,
@@ -203,5 +203,4 @@ class AddTransactionViewModel(
         }
     }
 }
-
 

@@ -34,7 +34,7 @@ class TransactionDetailViewModel(
                             amountCents = details.amountCents,
                             isExpense = details.amountCents < 0,
                             description = details.description,
-                            date = details.datetime.date,
+                            date = details.date,
                             categoryName = details.categoryName,
                             notes = details.notes,
                         )

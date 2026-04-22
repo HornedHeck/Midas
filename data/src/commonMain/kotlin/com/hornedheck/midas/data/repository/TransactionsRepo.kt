@@ -7,11 +7,13 @@ import com.hornedheck.midas.domain.model.CategorySource
 import com.hornedheck.midas.domain.model.Transaction
 import com.hornedheck.midas.domain.model.TransactionCategoryUpdate
 import com.hornedheck.midas.domain.model.TransactionDetails
+import com.hornedheck.midas.domain.model.TransactionFilter
 import com.hornedheck.midas.domain.model.TransactionForApply
+import com.hornedheck.midas.domain.model.TransactionType
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
 
 class TransactionsRepo(
@@ -19,23 +21,37 @@ class TransactionsRepo(
     private val ioContext: CoroutineContext,
 ) : ITransactionsRepo {
 
-    override fun getTransactions(): Flow<List<Transaction>> = db.entryQueries
-        .selectAll { id, datetime, amount, description, categoryName, categoryColor ->
-            Transaction(
-                id = id,
-                datetime = datetime,
-                amountCents = amount,
-                description = description,
-                categoryName = categoryName,
-                categoryColor = categoryColor,
-            )
-        }
-        .asFlow()
-        .mapToList(ioContext)
+    override fun getTransactions(filter: TransactionFilter?): Flow<List<Transaction>> {
+        val preparedFilter = PreparedTransactionsFilter.from(filter)
+        return db.entryQueries
+            .selectAll(
+                include_expenses = preparedFilter.includeExpenses,
+                include_income = preparedFilter.includeIncome,
+                date_from = preparedFilter.dateFrom,
+                date_to = preparedFilter.dateTo,
+                amount_from_cents = preparedFilter.amountFromCents,
+                amount_to_cents = preparedFilter.amountToCents,
+                apply_category_filter = preparedFilter.applyCategoryFilter,
+                category_id = preparedFilter.categoryIds,
+                include_uncategorized = preparedFilter.includeUncategorized,
+            ) { id, datetime, amount, description, categoryId, categoryName, categoryColor ->
+                Transaction(
+                    id = id,
+                    date = datetime,
+                    amountCents = amount,
+                    description = description,
+                    categoryId = categoryId,
+                    categoryName = categoryName,
+                    categoryColor = categoryColor,
+                )
+            }
+            .asFlow()
+            .mapToList(ioContext)
+    }
 
     override suspend fun upsertTransaction(
         id: Long?,
-        datetime: LocalDateTime,
+        date: LocalDate,
         amountCents: Long,
         description: String,
         categoryId: Long?,
@@ -45,7 +61,7 @@ class TransactionsRepo(
         withContext(ioContext) {
             if (id == null) {
                 db.entryQueries.insert(
-                    datetime = datetime,
+                    datetime = date,
                     amount = amountCents,
                     description = description,
                     categoryId = categoryId,
@@ -56,7 +72,7 @@ class TransactionsRepo(
             } else {
                 db.entryQueries.update(
                     id = id,
-                    datetime = datetime,
+                    datetime = date,
                     amount = amountCents,
                     description = description,
                     categoryId = categoryId,
@@ -77,7 +93,7 @@ class TransactionsRepo(
                     ->
                     TransactionDetails(
                         id = eId,
-                        datetime = datetime,
+                        date = datetime,
                         amountCents = amount,
                         description = description,
                         notes = notes,
@@ -103,7 +119,7 @@ class TransactionsRepo(
                 .selectForReapply { id, datetime, amount, description, categoryId, categorySource ->
                     TransactionForApply(
                         id = id,
-                        datetime = datetime,
+                        date = datetime,
                         amountCents = amount,
                         description = description,
                         categoryId = categoryId,
@@ -139,6 +155,46 @@ class TransactionsRepo(
                         id = update.id,
                     )
                 }
+            }
+        }
+    }
+
+    private data class PreparedTransactionsFilter(
+        val includeExpenses: Long,
+        val includeIncome: Long,
+        val dateFrom: LocalDate?,
+        val dateTo: LocalDate?,
+        val amountFromCents: Long?,
+        val amountToCents: Long?,
+        val applyCategoryFilter: Long,
+        val categoryIds: List<Long>,
+        val includeUncategorized: Long,
+    ) {
+        companion object {
+            private const val FALSE = 0L
+            private const val TRUE = 1L
+            private const val UNUSED_CATEGORY_ID = -1L
+
+            fun from(filter: TransactionFilter?): PreparedTransactionsFilter {
+                val categoryIds = filter?.categoryIds.orEmpty()
+                val selectedCategoryIds = categoryIds.filterNotNull()
+                return PreparedTransactionsFilter(
+                    includeExpenses = when (filter?.type ?: TransactionType.ALL) {
+                        TransactionType.ALL, TransactionType.EXPENSES -> TRUE
+                        TransactionType.INCOME -> FALSE
+                    },
+                    includeIncome = when (filter?.type ?: TransactionType.ALL) {
+                        TransactionType.ALL, TransactionType.INCOME -> TRUE
+                        TransactionType.EXPENSES -> FALSE
+                    },
+                    dateFrom = filter?.dateFrom,
+                    dateTo = filter?.dateTo,
+                    amountFromCents = filter?.amountFromCents,
+                    amountToCents = filter?.amountToCents,
+                    applyCategoryFilter = if (categoryIds.isEmpty()) FALSE else TRUE,
+                    categoryIds = selectedCategoryIds.ifEmpty { listOf(UNUSED_CATEGORY_ID) },
+                    includeUncategorized = if (null in categoryIds) TRUE else FALSE,
+                )
             }
         }
     }

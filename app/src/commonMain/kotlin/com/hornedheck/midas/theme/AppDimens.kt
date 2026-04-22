@@ -10,6 +10,7 @@ object AppDimens {
     val spacing4x = 16.dp
     val spacing5x = 20.dp
     val spacing6x = 24.dp
+    val spacing8x = 32.dp
     val spacing10x = 40.dp
 
 }
