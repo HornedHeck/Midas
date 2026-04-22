@@ -9,7 +9,10 @@ data class TransactionFilter(
     val amountFromCents: Long? = null,
     val amountToCents: Long? = null,
     val categoryIds: Set<Long?> = emptySet(),
+    val searchQuery: String? = null,
 ) {
+    fun withSearchQuery(query: String?): TransactionFilter =
+        copy(searchQuery = query?.trim()?.takeIf { it.isNotEmpty() })
 
     val isEmpty: Boolean
         get() = type == TransactionType.ALL
@@ -18,6 +21,7 @@ data class TransactionFilter(
                 && amountFromCents == null
                 && amountToCents == null
                 && categoryIds.isEmpty()
+                && searchQuery.isNullOrBlank()
 }
 
 enum class TransactionType { ALL, EXPENSES, INCOME }

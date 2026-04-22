@@ -31,6 +31,7 @@ class TransactionsRepo(
                 date_to = preparedFilter.dateTo,
                 amount_from_cents = preparedFilter.amountFromCents,
                 amount_to_cents = preparedFilter.amountToCents,
+                description_query = preparedFilter.descriptionQuery,
                 apply_category_filter = preparedFilter.applyCategoryFilter,
                 category_id = preparedFilter.categoryIds,
                 include_uncategorized = preparedFilter.includeUncategorized,
@@ -166,6 +167,7 @@ class TransactionsRepo(
         val dateTo: LocalDate?,
         val amountFromCents: Long?,
         val amountToCents: Long?,
+        val descriptionQuery: String?,
         val applyCategoryFilter: Long,
         val categoryIds: List<Long>,
         val includeUncategorized: Long,
@@ -191,6 +193,11 @@ class TransactionsRepo(
                     dateTo = filter?.dateTo,
                     amountFromCents = filter?.amountFromCents,
                     amountToCents = filter?.amountToCents,
+                    descriptionQuery = filter?.searchQuery
+                        ?.trim()
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.lowercase()
+                        ?.escapeLikePattern(),
                     applyCategoryFilter = if (categoryIds.isEmpty()) FALSE else TRUE,
                     categoryIds = selectedCategoryIds.ifEmpty { listOf(UNUSED_CATEGORY_ID) },
                     includeUncategorized = if (null in categoryIds) TRUE else FALSE,
@@ -199,3 +206,8 @@ class TransactionsRepo(
         }
     }
 }
+
+private fun String.escapeLikePattern(): String =
+    replace("\\", "\\\\")
+        .replace("%", "\\%")
+        .replace("_", "\\_")

@@ -40,6 +40,10 @@ AND (:date_to IS NULL OR e.datetime <= :date_to)
 AND (:amount_from_cents IS NULL OR ABS(e.amount) >= :amount_from_cents)
 AND (:amount_to_cents IS NULL OR ABS(e.amount) <= :amount_to_cents)
 AND (
+    :description_query IS NULL
+    OR LOWER(e.description) LIKE ('%' || :description_query || '%') ESCAPE '\'
+)
+AND (
     :apply_category_filter = 0
     OR e.category_id IN ?
     OR (:include_uncategorized = 1 AND e.category_id IS NULL)

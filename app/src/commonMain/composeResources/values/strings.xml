@@ -60,8 +60,13 @@
     <string name="filter_chip_amount_at_least">At least %1$s</string>
     <string name="filter_chip_amount_at_most">At most %1$s</string>
     <string name="empty_transactions_filtered">No transactions match the current filters</string>
+    <string name="empty_transactions_search">No transactions match your search</string>
+    <string name="empty_transactions_search_filtered">No transactions match your search and filters</string>
     <string name="cd_filter">Filter transactions</string>
+    <string name="cd_search_transactions">Search transactions</string>
+    <string name="cd_clear_search">Clear search</string>
     <string name="cd_clear_chip">Remove filter</string>
+    <string name="placeholder_search_transaction">Search transaction</string>
 
     <string name="dialog_delete_transaction_title">Delete Transaction</string>
     <string name="dialog_delete_transaction_body">Transaction "%1$s" will be permanently removed. This action cannot be undone.</string>

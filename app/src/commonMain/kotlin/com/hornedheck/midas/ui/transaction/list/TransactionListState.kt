@@ -4,23 +4,49 @@ import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.StringResource
 
 import midas.app.generated.resources.Res
+import midas.app.generated.resources.empty_transactions
+import midas.app.generated.resources.empty_transactions_filtered
+import midas.app.generated.resources.empty_transactions_search
+import midas.app.generated.resources.empty_transactions_search_filtered
 import midas.app.generated.resources.filter_type_expense
 import midas.app.generated.resources.filter_type_income
 
 sealed interface TransactionListState {
-    data object Loading : TransactionListState
-    data class Empty(
-        val isFiltered: Boolean = false,
-        val activeChips: List<FilterChipKey> = emptyList(),
+    val search: TransactionListSearchUi
+
+    data class Loading(
+        override val search: TransactionListSearchUi = TransactionListSearchUi(),
     ) : TransactionListState
+
+    data class Empty(
+        val reason: TransactionListEmptyReason = TransactionListEmptyReason.None,
+        val activeChips: List<FilterChipKey> = emptyList(),
+        override val search: TransactionListSearchUi = TransactionListSearchUi(),
+    ) : TransactionListState
+
     data class Content(
         val groups: List<TransactionGroup>,
         val activeChips: List<FilterChipKey>,
+        override val search: TransactionListSearchUi = TransactionListSearchUi(),
     ) : TransactionListState
+
     data class Error(
         val message: String,
         val activeChips: List<FilterChipKey> = emptyList(),
+        override val search: TransactionListSearchUi = TransactionListSearchUi(),
     ) : TransactionListState
+}
+
+data class TransactionListSearchUi(
+    val isVisible: Boolean = false,
+    val query: String = "",
+)
+
+enum class TransactionListEmptyReason(val message: StringResource) {
+    None(Res.string.empty_transactions),
+    Filters(Res.string.empty_transactions_filtered),
+    Search(Res.string.empty_transactions_search),
+    SearchAndFilters(Res.string.empty_transactions_search_filtered),
 }
 
 sealed interface FilterChipKey {

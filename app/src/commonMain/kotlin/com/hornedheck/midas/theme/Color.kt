@@ -1,3 +1,4 @@
+@file:Suppress("MagicNumber")
 package com.hornedheck.midas.theme
 
 import androidx.compose.ui.graphics.Color

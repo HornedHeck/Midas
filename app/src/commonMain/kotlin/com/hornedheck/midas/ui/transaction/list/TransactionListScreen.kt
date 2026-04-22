@@ -14,10 +14,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -27,7 +30,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,8 +40,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -54,9 +59,9 @@ import com.hornedheck.midas.util.formatLong
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.cd_add_transaction
 import midas.app.generated.resources.cd_clear_chip
+import midas.app.generated.resources.cd_clear_search
 import midas.app.generated.resources.cd_filter
-import midas.app.generated.resources.empty_transactions
-import midas.app.generated.resources.empty_transactions_filtered
+import midas.app.generated.resources.cd_search_transactions
 import midas.app.generated.resources.error_loading_transactions
 import midas.app.generated.resources.filter_chip_amount_at_least
 import midas.app.generated.resources.filter_chip_amount_at_most
@@ -64,6 +69,7 @@ import midas.app.generated.resources.filter_chip_date_after
 import midas.app.generated.resources.filter_chip_date_before
 import midas.app.generated.resources.hint_none
 import midas.app.generated.resources.hint_uncategorized
+import midas.app.generated.resources.placeholder_search_transaction
 import midas.app.generated.resources.screen_transactions
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -85,6 +91,9 @@ fun TransactionListScreen(
         onTransactionClick = onTransactionClick,
         onTransactionDelete = onTransactionDelete,
         onDismissChip = viewModel::dismissChip,
+        onShowSearch = viewModel::showSearch,
+        searchState = viewModel.searchState,
+        onClearSearch = viewModel::clearSearchAndHide,
     )
 }
 
@@ -92,27 +101,26 @@ fun TransactionListScreen(
 @Composable
 fun TransactionListScreen(
     state: TransactionListState,
+    searchState: TextFieldState,
     onAddTransaction: () -> Unit = {},
     onFilterClick: () -> Unit = {},
     onTransactionClick: (Long) -> Unit = {},
     onTransactionDelete: (id: Long, description: String) -> Unit = { _, _ -> },
     onDismissChip: (FilterChipKey) -> Unit = {},
+    onShowSearch: () -> Unit = {},
+    onClearSearch: () -> Unit = {},
 ) {
     var fabHeightPx by remember { mutableFloatStateOf(0f) }
     val fabSafeBottomSpacing = fabHeightPx.dp + AppDimens.spacing8x
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.screen_transactions)) },
-                actions = {
-                    IconButton(onClick = onFilterClick) {
-                        Icon(
-                            Icons.Default.FilterList,
-                            contentDescription = stringResource(Res.string.cd_filter),
-                        )
-                    }
-                },
+            TransactionListTopBar(
+                search = state.search,
+                onShowSearch = onShowSearch,
+                searchState = searchState,
+                onClearSearch = onClearSearch,
+                onFilterClick = onFilterClick,
             )
         },
         bottomBar = { BottomNavBar() },
@@ -143,6 +151,82 @@ fun TransactionListScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TransactionListTopBar(
+    search: TransactionListSearchUi,
+    onShowSearch: () -> Unit,
+    searchState: TextFieldState,
+    onClearSearch: () -> Unit,
+    onFilterClick: () -> Unit,
+) {
+    TopAppBar(
+        title = {
+            if (search.isVisible) {
+                TransactionSearchField(
+                    state = searchState,
+                    onClearSearch = onClearSearch,
+                )
+            } else {
+                Text(stringResource(Res.string.screen_transactions))
+            }
+        },
+        actions = {
+            if (!search.isVisible) {
+                IconButton(onClick = onShowSearch) {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = stringResource(Res.string.cd_search_transactions),
+                    )
+                }
+            }
+            IconButton(onClick = onFilterClick) {
+                Icon(
+                    Icons.Default.FilterList,
+                    contentDescription = stringResource(Res.string.cd_filter),
+                )
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TransactionSearchField(
+    state: TextFieldState,
+    onClearSearch: () -> Unit,
+) {
+    TextField(
+        state = state,
+        modifier = Modifier.fillMaxWidth(),
+        lineLimits = TextFieldLineLimits.SingleLine,
+        placeholder = {
+            Text(stringResource(Res.string.placeholder_search_transaction))
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null,
+            )
+        },
+        trailingIcon = {
+            IconButton(onClick = onClearSearch) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(Res.string.cd_clear_search),
+                )
+            }
+        },
+        shape = SearchBarDefaults.inputFieldShape,
+        colors = SearchBarDefaults.inputFieldColors().copy(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+        )
+    )
+}
+
 @Composable
 private fun TransactionListBody(
     modifier: Modifier,
@@ -152,27 +236,26 @@ private fun TransactionListBody(
     onDismissChip: (FilterChipKey) -> Unit,
     bottomSpacer: Dp,
 ) {
-    Box(modifier = modifier) {
-        when (state) {
-            is TransactionListState.Loading -> FullScreenLoading(modifier = Modifier.fillMaxSize())
-            is TransactionListState.Empty -> EmptyTransactionsContent(
-                state = state,
-                modifier = Modifier.fillMaxSize(),
-            )
-            is TransactionListState.Content -> TransactionListContent(
-                state = state,
-                onTransactionClick = onTransactionClick,
-                onTransactionDelete = onTransactionDelete,
-                onDismissChip = onDismissChip,
-                bottomSpacer = bottomSpacer,
-                modifier = Modifier.fillMaxSize(),
-            )
-            is TransactionListState.Error -> ErrorTransactionsContent(
-                state = state,
-                onDismissChip = onDismissChip,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
+    when (state) {
+        is TransactionListState.Loading -> FullScreenLoading(modifier = modifier.fillMaxSize())
+        is TransactionListState.Empty -> EmptyTransactionsContent(
+            state = state,
+            onDismissChip = onDismissChip,
+            modifier = modifier.fillMaxSize(),
+        )
+        is TransactionListState.Content -> TransactionListContent(
+            state = state,
+            onTransactionClick = onTransactionClick,
+            onTransactionDelete = onTransactionDelete,
+            onDismissChip = onDismissChip,
+            bottomSpacer = bottomSpacer,
+            modifier = modifier.fillMaxSize(),
+        )
+        is TransactionListState.Error -> ErrorTransactionsContent(
+            state = state,
+            onDismissChip = onDismissChip,
+            modifier = modifier.fillMaxSize(),
+        )
     }
 }
 
@@ -192,7 +275,12 @@ private fun TransactionListContent(
                 onDismissChip = onDismissChip,
             )
         }
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+        ) {
             state.groups.forEachIndexed { groupIndex, group ->
                 stickyHeader(key = group.date) {
                     Column(
@@ -240,12 +328,23 @@ private fun TransactionListContent(
 private fun EmptyTransactionsContent(
     modifier: Modifier,
     state: TransactionListState.Empty,
+    onDismissChip: (FilterChipKey) -> Unit,
 ) {
-    FullScreenEmptyText(
-        text = if (state.isFiltered) stringResource(Res.string.empty_transactions_filtered)
-        else stringResource(Res.string.empty_transactions),
-        modifier = modifier,
-    )
+    Column(modifier = modifier) {
+        if (state.activeChips.isNotEmpty()) {
+            ActiveFiltersRow(
+                chips = state.activeChips,
+                onDismissChip = onDismissChip,
+            )
+        }
+
+        FullScreenEmptyText(
+            text = stringResource(state.reason.message),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+        )
+    }
 }
 
 @Composable
@@ -261,9 +360,12 @@ private fun ErrorTransactionsContent(
                 onDismissChip = onDismissChip,
             )
         }
+
         FullScreenErrorText(
             message = state.message.ifEmpty { stringResource(Res.string.error_loading_transactions) },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
         )
     }
 }
