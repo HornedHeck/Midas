@@ -4,7 +4,7 @@ import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.hornedheck.midas.db.Database
-import com.hornedheck.midas.domain.model.Category
+import com.hornedheck.midas.domain.model.category.Category
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
 import com.hornedheck.midas.domain.repository.IRulesRepo
 import kotlinx.coroutines.flow.Flow

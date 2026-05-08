@@ -81,6 +81,9 @@ koin-test = { module = "io.insert-koin:koin-test" }
 #DataStore
 datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastore" }
 
+#Charts
+koalaplot = { module = "io.github.koalaplot:koalaplot-core", version = "0.11.2" }
+
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }

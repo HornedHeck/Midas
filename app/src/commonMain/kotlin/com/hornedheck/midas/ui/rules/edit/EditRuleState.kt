@@ -1,7 +1,7 @@
 package com.hornedheck.midas.ui.rules.edit
 
 import androidx.compose.foundation.text.input.TextFieldState
-import com.hornedheck.midas.domain.model.RuleType
+import com.hornedheck.midas.domain.model.category.RuleType
 import com.hornedheck.midas.ui.transaction.add.CategoryOption
 import org.jetbrains.compose.resources.StringResource
 

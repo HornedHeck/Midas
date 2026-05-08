@@ -25,7 +25,7 @@ fun App() {
     MidasAppTheme {
         val backStack = rememberNavBackStack(
             koinInject<SavedStateConfiguration>(),
-            Main.TransactionsList
+            Main.Dashboard
         )
         CompositionLocalProvider(LocalNavBackStack provides backStack) {
             NavDisplay(

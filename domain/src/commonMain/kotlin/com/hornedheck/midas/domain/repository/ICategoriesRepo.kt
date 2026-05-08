@@ -1,6 +1,6 @@
 package com.hornedheck.midas.domain.repository
 
-import com.hornedheck.midas.domain.model.Category
+import com.hornedheck.midas.domain.model.category.Category
 import kotlinx.coroutines.flow.Flow
 
 interface ICategoriesRepo {

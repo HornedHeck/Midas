@@ -17,7 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.hornedheck.midas.domain.model.Category
+import com.hornedheck.midas.domain.model.category.Category
 import com.hornedheck.midas.theme.AppDimens
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.action_cancel

@@ -1,7 +1,7 @@
 package com.hornedheck.midas.data.db
 
 import app.cash.sqldelight.ColumnAdapter
-import com.hornedheck.midas.domain.model.CategorySource
+import com.hornedheck.midas.domain.model.transaction.CategorySource
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 

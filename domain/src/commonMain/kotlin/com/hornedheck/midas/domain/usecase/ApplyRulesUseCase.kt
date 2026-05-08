@@ -1,7 +1,7 @@
 package com.hornedheck.midas.domain.usecase
 
-import com.hornedheck.midas.domain.model.CategorySource
-import com.hornedheck.midas.domain.model.TransactionCategoryUpdate
+import com.hornedheck.midas.domain.model.transaction.CategorySource
+import com.hornedheck.midas.domain.model.transaction.TransactionCategoryUpdate
 import com.hornedheck.midas.domain.repository.IRuleMatcher
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.async

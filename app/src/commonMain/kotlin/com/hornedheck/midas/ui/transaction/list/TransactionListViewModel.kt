@@ -6,10 +6,10 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hornedheck.midas.domain.model.Category
-import com.hornedheck.midas.domain.model.Transaction
-import com.hornedheck.midas.domain.model.TransactionFilter
-import com.hornedheck.midas.domain.model.TransactionType
+import com.hornedheck.midas.domain.model.category.Category
+import com.hornedheck.midas.domain.model.transaction.Transaction
+import com.hornedheck.midas.domain.model.transaction.TransactionFilter
+import com.hornedheck.midas.domain.model.transaction.TransactionType
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
 import com.hornedheck.midas.domain.usecase.TransactionsListUseCase
 import com.hornedheck.midas.util.SUBSCRIPTION_TIMEOUT
@@ -24,8 +24,10 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 
 class TransactionListViewModel(
+    @InjectedParam initialFilter: TransactionFilter? = null,
     private val useCase: TransactionsListUseCase,
     categoriesRepo: ICategoriesRepo,
 ) : ViewModel() {
@@ -33,6 +35,10 @@ class TransactionListViewModel(
     val searchState = TextFieldState()
 
     init {
+        if (initialFilter != null) {
+            useCase.clearSearch()
+            useCase.updateFilters(initialFilter)
+        }
         searchState.setTextAndPlaceCursorAtEnd(useCase.searchQuery.value)
         viewModelScope.launch {
             snapshotFlow { searchState.text.toString() }

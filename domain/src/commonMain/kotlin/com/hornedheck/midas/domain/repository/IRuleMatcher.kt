@@ -1,7 +1,7 @@
 package com.hornedheck.midas.domain.repository
 
-import com.hornedheck.midas.domain.model.CategoryRule
-import com.hornedheck.midas.domain.model.RuleType
+import com.hornedheck.midas.domain.model.category.CategoryRule
+import com.hornedheck.midas.domain.model.category.RuleType
 import kotlin.math.abs
 
 interface IRuleMatcher {

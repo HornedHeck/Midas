@@ -29,7 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hornedheck.midas.domain.model.RuleType
+import com.hornedheck.midas.domain.model.category.RuleType
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.ui.components.CategoryDropdown
 import com.hornedheck.midas.ui.components.SaveButton

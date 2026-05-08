@@ -1,7 +1,7 @@
 package com.hornedheck.midas.domain.usecase
 
-import com.hornedheck.midas.domain.model.Transaction
-import com.hornedheck.midas.domain.model.TransactionFilter
+import com.hornedheck.midas.domain.model.transaction.Transaction
+import com.hornedheck.midas.domain.model.transaction.TransactionFilter
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview

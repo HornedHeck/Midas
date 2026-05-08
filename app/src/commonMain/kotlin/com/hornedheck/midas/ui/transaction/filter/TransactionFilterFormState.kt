@@ -1,7 +1,7 @@
 package com.hornedheck.midas.ui.transaction.filter
 
-import com.hornedheck.midas.domain.model.Category
-import com.hornedheck.midas.domain.model.TransactionType
+import com.hornedheck.midas.domain.model.category.Category
+import com.hornedheck.midas.domain.model.transaction.TransactionType
 import kotlinx.datetime.LocalDate
 
 data class TransactionFilterFormState(

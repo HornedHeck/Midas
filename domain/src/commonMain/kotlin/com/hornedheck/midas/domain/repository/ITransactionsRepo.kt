@@ -1,16 +1,24 @@
 package com.hornedheck.midas.domain.repository
 
-import com.hornedheck.midas.domain.model.CategorySource
-import com.hornedheck.midas.domain.model.Transaction
-import com.hornedheck.midas.domain.model.TransactionCategoryUpdate
-import com.hornedheck.midas.domain.model.TransactionDetails
-import com.hornedheck.midas.domain.model.TransactionFilter
-import com.hornedheck.midas.domain.model.TransactionForApply
+import com.hornedheck.midas.domain.model.transaction.CategorySource
+import com.hornedheck.midas.domain.model.dashboard.HomeDashboardData
+import com.hornedheck.midas.domain.model.transaction.Transaction
+import com.hornedheck.midas.domain.model.transaction.TransactionCategoryUpdate
+import com.hornedheck.midas.domain.model.transaction.TransactionDetails
+import com.hornedheck.midas.domain.model.transaction.TransactionFilter
+import com.hornedheck.midas.domain.model.transaction.TransactionForApply
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.LocalDate
 
 interface ITransactionsRepo {
     fun getTransactions(filter: TransactionFilter? = null): Flow<List<Transaction>>
+
+    fun observeHomeDashboard(
+        dateFrom: LocalDate,
+        dateTo: LocalDate,
+        prevFrom: LocalDate,
+        prevTo: LocalDate,
+    ): Flow<HomeDashboardData>
 
     suspend fun upsertTransaction(
         id: Long?,

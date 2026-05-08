@@ -1,7 +1,7 @@
 package com.hornedheck.midas.ui.transaction.add
 
 import androidx.compose.foundation.text.input.TextFieldState
-import com.hornedheck.midas.domain.model.CategorySource
+import com.hornedheck.midas.domain.model.transaction.CategorySource
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.StringResource
 

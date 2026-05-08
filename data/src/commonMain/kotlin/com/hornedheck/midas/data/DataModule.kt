@@ -11,6 +11,7 @@ import com.hornedheck.midas.domain.repository.IRulesRepo
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import com.hornedheck.midas.domain.repository.RuleMatcherImpl
 import com.hornedheck.midas.domain.usecase.ApplyRulesUseCase
+import com.hornedheck.midas.domain.usecase.GetHomeDashboardUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import org.koin.dsl.bind
@@ -29,6 +30,7 @@ val dataModule = module {
     single<RulesRepo>() bind IRulesRepo::class
     single<RuleMatcherImpl>() bind IRuleMatcher::class
     single<ApplyRulesUseCase>()
+    single<GetHomeDashboardUseCase>()
 }
 
 fun createDispatcher() : CoroutineContext = Dispatchers.IO

@@ -6,8 +6,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.hornedheck.midas.data.model.CategoryRuleDto
 import com.hornedheck.midas.data.model.toDomain
-import com.hornedheck.midas.domain.model.CategoryRule
-import com.hornedheck.midas.domain.model.RuleType
+import com.hornedheck.midas.domain.model.category.CategoryRule
+import com.hornedheck.midas.domain.model.category.RuleType
 import com.hornedheck.midas.domain.repository.IRulesRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

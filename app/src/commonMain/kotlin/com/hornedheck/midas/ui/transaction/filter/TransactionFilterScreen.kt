@@ -43,8 +43,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.hornedheck.midas.domain.model.Category
-import com.hornedheck.midas.domain.model.TransactionType
+import com.hornedheck.midas.domain.model.category.Category
+import com.hornedheck.midas.domain.model.transaction.TransactionType
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.theme.MidasAppTheme
 import com.hornedheck.midas.ui.components.AmountField

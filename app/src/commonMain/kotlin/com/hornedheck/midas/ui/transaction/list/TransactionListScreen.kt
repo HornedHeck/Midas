@@ -2,7 +2,6 @@ package com.hornedheck.midas.ui.transaction.list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -42,11 +41,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.theme.MidasColor
+import com.hornedheck.midas.domain.model.transaction.TransactionFilter
 import com.hornedheck.midas.ui.components.ColorDot
 import com.hornedheck.midas.ui.components.FullScreenEmptyText
 import com.hornedheck.midas.ui.components.FullScreenErrorText
@@ -73,14 +74,16 @@ import midas.app.generated.resources.placeholder_search_transaction
 import midas.app.generated.resources.screen_transactions
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun TransactionListScreen(
+    initialFilter: TransactionFilter? = null,
     onAddTransaction: () -> Unit = {},
     onFilterClick: () -> Unit = {},
     onTransactionClick: (Long) -> Unit = {},
     onTransactionDelete: (id: Long, description: String) -> Unit = { _, _ -> },
-    viewModel: TransactionListViewModel = koinViewModel(),
+    viewModel: TransactionListViewModel = koinViewModel(parameters = { parametersOf(initialFilter) }),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -111,7 +114,9 @@ fun TransactionListScreen(
     onClearSearch: () -> Unit = {},
 ) {
     var fabHeightPx by remember { mutableFloatStateOf(0f) }
-    val fabSafeBottomSpacing = fabHeightPx.dp + AppDimens.spacing8x
+    val fabSafeBottomSpacing = with(LocalDensity.current){
+        fabHeightPx.toDp()
+    } + AppDimens.spacing8x
 
     Scaffold(
         topBar = {

@@ -2,16 +2,22 @@ package com.hornedheck.midas.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
 import com.hornedheck.midas.db.Database
-import com.hornedheck.midas.domain.model.CategorySource
-import com.hornedheck.midas.domain.model.Transaction
-import com.hornedheck.midas.domain.model.TransactionCategoryUpdate
-import com.hornedheck.midas.domain.model.TransactionDetails
-import com.hornedheck.midas.domain.model.TransactionFilter
-import com.hornedheck.midas.domain.model.TransactionForApply
-import com.hornedheck.midas.domain.model.TransactionType
+import com.hornedheck.midas.domain.model.transaction.CategorySource
+import com.hornedheck.midas.domain.model.dashboard.CategorySpending
+import com.hornedheck.midas.domain.model.dashboard.HomeDashboardData
+import com.hornedheck.midas.domain.model.transaction.Transaction
+import com.hornedheck.midas.domain.model.transaction.TransactionCategoryUpdate
+import com.hornedheck.midas.domain.model.transaction.TransactionDetails
+import com.hornedheck.midas.domain.model.transaction.TransactionFilter
+import com.hornedheck.midas.domain.model.transaction.TransactionForApply
+import com.hornedheck.midas.domain.model.dashboard.TransactionSummary
+import com.hornedheck.midas.domain.model.transaction.TransactionType
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import kotlin.coroutines.CoroutineContext
@@ -48,6 +54,41 @@ class TransactionsRepo(
             }
             .asFlow()
             .mapToList(ioContext)
+    }
+
+    override fun observeHomeDashboard(
+        dateFrom: LocalDate,
+        dateTo: LocalDate,
+        prevFrom: LocalDate,
+        prevTo: LocalDate,
+    ): Flow<HomeDashboardData> {
+        val currentSummaryFlow = db.entryQueries
+            .selectSummary(dateFrom, dateTo) { income, expense ->
+                TransactionSummary(income, expense)
+            }
+            .asFlow()
+            .mapToOne(ioContext)
+            .distinctUntilChanged()
+
+        val previousSummaryFlow = db.entryQueries
+            .selectSummary(prevFrom, prevTo) { income, expense ->
+                TransactionSummary(income, expense)
+            }
+            .asFlow()
+            .mapToOne(ioContext)
+            .distinctUntilChanged()
+
+        val breakdownFlow = db.entryQueries
+            .selectCategoryBreakdown(dateFrom, dateTo) { categoryId, categoryName, categoryColor, totalCents ->
+                CategorySpending(categoryId, categoryName, categoryColor, totalCents)
+            }
+            .asFlow()
+            .mapToList(ioContext)
+            .distinctUntilChanged()
+
+        return combine(currentSummaryFlow, previousSummaryFlow, breakdownFlow) { current, previous, breakdown ->
+            HomeDashboardData(current, previous, breakdown)
+        }
     }
 
     override suspend fun upsertTransaction(

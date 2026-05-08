@@ -14,7 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.hornedheck.midas.domain.model.CategorySource
+import com.hornedheck.midas.domain.model.transaction.CategorySource
 import com.hornedheck.midas.ui.transaction.add.CategoryOption
 import midas.app.generated.resources.Res
 import midas.app.generated.resources.hint_none

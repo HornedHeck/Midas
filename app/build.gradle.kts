@@ -60,6 +60,9 @@ kotlin {
 
             // Date/Time
             implementation(libs.kotlinx.datetime)
+
+            // Charts
+            implementation(libs.koalaplot)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

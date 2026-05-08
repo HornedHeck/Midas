@@ -3,7 +3,7 @@ package com.hornedheck.midas.ui.rules.edit
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hornedheck.midas.domain.model.RuleType
+import com.hornedheck.midas.domain.model.category.RuleType
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
 import com.hornedheck.midas.domain.repository.IRulesRepo
 import com.hornedheck.midas.ui.transaction.add.CategoryOption

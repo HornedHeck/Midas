@@ -1,7 +1,7 @@
 package com.hornedheck.midas.data.model
 
-import com.hornedheck.midas.domain.model.CategoryRule
-import com.hornedheck.midas.domain.model.RuleType
+import com.hornedheck.midas.domain.model.category.CategoryRule
+import com.hornedheck.midas.domain.model.category.RuleType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

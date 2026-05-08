@@ -5,8 +5,8 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hornedheck.midas.domain.model.TransactionFilter
-import com.hornedheck.midas.domain.model.TransactionType
+import com.hornedheck.midas.domain.model.transaction.TransactionFilter
+import com.hornedheck.midas.domain.model.transaction.TransactionType
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
 import com.hornedheck.midas.domain.usecase.TransactionsListUseCase
 import com.hornedheck.midas.util.formatAmount

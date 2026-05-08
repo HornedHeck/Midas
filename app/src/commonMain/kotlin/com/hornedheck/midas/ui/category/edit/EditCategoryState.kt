@@ -10,7 +10,7 @@ internal val CATEGORY_PALETTE = listOf(
     0xFFEF9A9AL.toInt(), // Salmon
     0xFFBDBDBDL.toInt(), // Grey
     0xFFE91E63L.toInt(), // Pink
-    0xFFCDDC39L.toInt(), // Lime
+    0xFFDCD438L.toInt(), // Lime
     0xFFFFC107L.toInt(), // Amber
     0xFF90CAF9L.toInt(), // Light Blue
     0xFF4DB6ACL.toInt(), // Teal

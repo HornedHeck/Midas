@@ -3,7 +3,7 @@ package com.hornedheck.midas.ui.transaction.add
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hornedheck.midas.domain.model.CategorySource
+import com.hornedheck.midas.domain.model.transaction.CategorySource
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
 import com.hornedheck.midas.domain.repository.IRuleMatcher
 import com.hornedheck.midas.domain.repository.ITransactionsRepo

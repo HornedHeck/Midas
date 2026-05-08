@@ -35,7 +35,7 @@ fun BottomNavBar(modifier: Modifier = Modifier) {
             icon = { Icon(Icons.Default.ReceiptLong, contentDescription = null) },
             label = { Text(stringResource(Res.string.nav_transactions)) },
             selected = current is Main.TransactionsList,
-            onClick = { if (current !is Main.TransactionsList) backStack.add(Main.TransactionsList) },
+            onClick = { if (current !is Main.TransactionsList) backStack.add(Main.TransactionsList()) },
         )
         NavigationBarItem(
             icon = { Icon(Icons.Default.Category, contentDescription = null) },

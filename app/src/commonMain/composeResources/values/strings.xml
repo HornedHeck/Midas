@@ -143,4 +143,22 @@
         <item>Nov</item>
         <item>Dec</item>
     </string-array>
+    <!-- Home screen -->
+    <string name="home_title">Midas</string>
+    <string name="home_range_prefix">Show Statistics for last:</string>
+    <string name="home_range_1m">Month</string>
+    <string name="home_range_3m">3 months</string>
+    <string name="home_range_6m">6 months</string>
+    <string name="home_range_1y">Year</string>
+    <string name="home_statistics_title">Statistics</string>
+    <string name="home_label_income">Income:</string>
+    <string name="home_label_expenses">Spending:</string>
+    <string name="home_label_balance">Net Balance:</string>
+    <string name="home_category_percentage">%1$s%</string>
+    <string name="home_category_others">Others</string>
+    <string name="home_delta_percentage"> %1$s%</string>
+    <string name="home_empty_message">No transactions recorded for this period</string>
+    <string name="home_error">Failed to load dashboard data</string>
+    <string name="home_currency_label">USD</string>
+
 </resources>
