@@ -3,6 +3,7 @@ package com.hornedheck.midas.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hornedheck.midas.domain.model.settings.AppTheme
+import com.hornedheck.midas.domain.model.settings.Currency
 import com.hornedheck.midas.domain.model.settings.DashboardRange
 import com.hornedheck.midas.domain.repository.ISettingsRepo
 import com.hornedheck.midas.util.SUBSCRIPTION_TIMEOUT
@@ -17,12 +18,13 @@ class SettingsViewModel(private val settingsRepo: ISettingsRepo) : ViewModel() {
     val state: StateFlow<SettingsState> = combine(
         settingsRepo.observeTheme(),
         settingsRepo.observeDashboardRange(),
-    ) { theme, range ->
-        SettingsState(selectedTheme = theme, dashboardRange = range)
+        settingsRepo.observeCurrency(),
+    ) { theme, range, currency ->
+        SettingsState(selectedTheme = theme, dashboardRange = range, currency = currency)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),
-        SettingsState(AppTheme.DARK, DashboardRange.THREE_MONTHS),
+        SettingsState(AppTheme.DARK, DashboardRange.THREE_MONTHS, Currency.EUR),
     )
 
     fun setTheme(theme: AppTheme) {
@@ -31,5 +33,9 @@ class SettingsViewModel(private val settingsRepo: ISettingsRepo) : ViewModel() {
 
     fun setDashboardRange(range: DashboardRange) {
         viewModelScope.launch { settingsRepo.setDashboardRange(range) }
+    }
+
+    fun setCurrency(currency: Currency) {
+        viewModelScope.launch { settingsRepo.setCurrency(currency) }
     }
 }

@@ -1,6 +1,7 @@
 package com.hornedheck.midas.domain.repository
 
 import com.hornedheck.midas.domain.model.settings.AppTheme
+import com.hornedheck.midas.domain.model.settings.Currency
 import com.hornedheck.midas.domain.model.settings.DashboardRange
 import kotlinx.coroutines.flow.Flow
 
@@ -9,4 +10,6 @@ interface ISettingsRepo {
     suspend fun setTheme(theme: AppTheme)
     fun observeDashboardRange(): Flow<DashboardRange>
     suspend fun setDashboardRange(range: DashboardRange)
+    fun observeCurrency(): Flow<Currency>
+    suspend fun setCurrency(currency: Currency)
 }

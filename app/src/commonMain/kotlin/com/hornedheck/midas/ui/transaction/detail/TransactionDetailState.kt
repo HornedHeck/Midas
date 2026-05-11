@@ -13,5 +13,6 @@ sealed interface TransactionDetailState {
         val date: LocalDate,
         val categoryName: String?,
         val notes: String?,
+        val currencyCode: String,
     ) : TransactionDetailState
 }

@@ -11,9 +11,11 @@ import com.hornedheck.midas.domain.model.transaction.Transaction
 import com.hornedheck.midas.domain.model.transaction.TransactionFilter
 import com.hornedheck.midas.domain.model.transaction.TransactionType
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
+import com.hornedheck.midas.domain.repository.ISettingsRepo
 import com.hornedheck.midas.domain.usecase.TransactionsListUseCase
 import com.hornedheck.midas.util.SUBSCRIPTION_TIMEOUT
 import com.hornedheck.midas.util.formatAmount
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -30,6 +33,7 @@ class TransactionListViewModel(
     @InjectedParam initialFilter: TransactionFilter? = null,
     private val useCase: TransactionsListUseCase,
     categoriesRepo: ICategoriesRepo,
+    settingsRepo: ISettingsRepo,
 ) : ViewModel() {
     private val isSearchRequested = MutableStateFlow(false)
     val searchState = TextFieldState()
@@ -50,37 +54,44 @@ class TransactionListViewModel(
         }
     }
 
-    val state: StateFlow<TransactionListState> = combine(
-        useCase.getTransactions()
-            .map { Result.success(it) }
-            .catch { e -> emit(Result.failure(e)) },
-        useCase.filters,
-        categoriesRepo.getCategories(),
-        useCase.searchQuery,
-        isSearchRequested,
-    ) { transactionsResult, filter, categories, searchQuery, isSearchRequested ->
-        val search = TransactionListSearchUi(
-            isVisible = isSearchRequested || searchQuery.isNotBlank(),
-            query = searchQuery,
-        )
-        
-        transactionsResult.fold(
-            onSuccess = { transactions ->
-                transactions.toUiState(filter, categories, search)
-            },
-            onFailure = { error ->
-                TransactionListState.Error(
-                    message = error.message ?: "",
-                    activeChips = filter?.toChips(categories).orEmpty(),
-                    search = search,
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val state: StateFlow<TransactionListState> = settingsRepo.observeCurrency()
+        .flatMapLatest { currency ->
+            val currencyCode = currency.code
+            combine(
+                useCase.getTransactions()
+                    .map { Result.success(it) }
+                    .catch { e -> emit(Result.failure(e)) },
+                useCase.filters,
+                categoriesRepo.getCategories(),
+                useCase.searchQuery,
+                isSearchRequested,
+            ) { transactionsResult, filter, categories, searchQuery, isSearchRequested ->
+                val search = TransactionListSearchUi(
+                    isVisible = isSearchRequested || searchQuery.isNotBlank(),
+                    query = searchQuery,
                 )
-            },
+
+                transactionsResult.fold(
+                    onSuccess = { transactions ->
+                        transactions.toUiState(filter, categories, search, currencyCode)
+                    },
+                    onFailure = { error ->
+                        TransactionListState.Error(
+                            message = error.message ?: "",
+                            activeChips = filter?.toChips(categories).orEmpty(),
+                            search = search,
+                            currencyCode = currencyCode,
+                        )
+                    },
+                )
+            }
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),
+            TransactionListState.Loading(),
         )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),
-        TransactionListState.Loading(),
-    )
 
     fun showSearch() {
         isSearchRequested.value = true
@@ -109,13 +120,14 @@ class TransactionListViewModel(
         filter: TransactionFilter?,
         categories: List<Category>,
         search: TransactionListSearchUi,
+        currencyCode: String,
     ): TransactionListState {
         val activeChips = filter?.toChips(categories).orEmpty()
         val groups = groupBy { it.date }
             .map { (date, items) ->
                 TransactionGroup(
                     date = date,
-                    transactions = items.map { it.toUiItem() },
+                    transactions = items.map { it.toUiItem(currencyCode) },
                 )
             }
 
@@ -127,12 +139,14 @@ class TransactionListViewModel(
                 ),
                 activeChips = activeChips,
                 search = search,
+                currencyCode = currencyCode,
             )
         } else {
             TransactionListState.Content(
                 groups = groups,
                 activeChips = activeChips,
                 search = search,
+                currencyCode = currencyCode,
             )
         }
     }
@@ -147,13 +161,13 @@ class TransactionListViewModel(
         else -> TransactionListEmptyReason.None
     }
 
-    private fun Transaction.toUiItem(): TransactionUiItem {
+    private fun Transaction.toUiItem(currencyCode: String): TransactionUiItem {
         val isExpense = amountCents < 0
         return TransactionUiItem(
             id = id,
             description = description,
             categoryName = categoryName,
-            formattedAmount = formatAmount(amountCents, withCurrency = true),
+            formattedAmount = formatAmount(amountCents, currencyCode),
             isExpense = isExpense,
             categoryColor = categoryColor,
         )

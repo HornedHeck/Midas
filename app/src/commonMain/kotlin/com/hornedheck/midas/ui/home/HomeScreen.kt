@@ -64,7 +64,6 @@ import midas.app.generated.resources.cd_add_transaction
 import midas.app.generated.resources.hint_uncategorized
 import midas.app.generated.resources.home_category_others
 import midas.app.generated.resources.home_category_percentage
-import midas.app.generated.resources.home_currency_label
 import midas.app.generated.resources.home_delta_percentage
 import midas.app.generated.resources.home_empty_message
 import midas.app.generated.resources.home_error
@@ -201,6 +200,7 @@ private fun HomeContent(
                 isExpensesTrendPositive = state.isExpensesTrendPositive,
                 netBalanceDelta = state.netBalanceDeltaPct,
                 isNetBalanceTrendPositive = state.isNetBalanceTrendPositive,
+                currencyCode = state.currencyCode,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = AppDimens.spacing4x),
@@ -296,6 +296,7 @@ private fun SummaryCard(
     isExpensesTrendPositive: Boolean?,
     netBalanceDelta: Float?,
     isNetBalanceTrendPositive: Boolean?,
+    currencyCode: String,
     modifier: Modifier,
 ) {
     Card(modifier = modifier) {
@@ -311,6 +312,7 @@ private fun SummaryCard(
                     amountCents = incomeCents,
                     deltaPct = incomeDelta,
                     isTrendPositive = isIncomeTrendPositive,
+                    currencyCode = currencyCode,
                     modifier = Modifier.weight(1f),
                 )
                 SummaryColumn(
@@ -318,6 +320,7 @@ private fun SummaryCard(
                     amountCents = expensesCents,
                     deltaPct = expensesDelta,
                     isTrendPositive = isExpensesTrendPositive,
+                    currencyCode = currencyCode,
                     modifier = Modifier.weight(1f),
                 )
                 SummaryColumn(
@@ -325,6 +328,7 @@ private fun SummaryCard(
                     amountCents = netBalanceCents,
                     deltaPct = netBalanceDelta,
                     isTrendPositive = isNetBalanceTrendPositive,
+                    currencyCode = currencyCode,
                     showSign = true,
                     modifier = Modifier.weight(1f),
                 )
@@ -339,6 +343,7 @@ private fun SummaryColumn(
     amountCents: Long,
     deltaPct: Float?,
     isTrendPositive: Boolean?,
+    currencyCode: String,
     modifier: Modifier = Modifier,
     showSign: Boolean = false,
 ) {
@@ -353,15 +358,15 @@ private fun SummaryColumn(
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
         )
-        DeltaRow(deltaPct = deltaPct, isTrendPositive = isTrendPositive)
+        DeltaRow(deltaPct = deltaPct, isTrendPositive = isTrendPositive, currencyCode = currencyCode)
     }
 }
 
 @Composable
-private fun DeltaRow(deltaPct: Float?, isTrendPositive: Boolean?) {
+private fun DeltaRow(deltaPct: Float?, isTrendPositive: Boolean?, currencyCode: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
-            text = stringResource(Res.string.home_currency_label),
+            text = currencyCode,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

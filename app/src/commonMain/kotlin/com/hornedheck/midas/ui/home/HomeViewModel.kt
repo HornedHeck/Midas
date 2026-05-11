@@ -2,6 +2,7 @@ package com.hornedheck.midas.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hornedheck.midas.domain.model.settings.Currency
 import com.hornedheck.midas.domain.model.settings.DashboardRange
 import com.hornedheck.midas.domain.repository.ISettingsRepo
 import com.hornedheck.midas.domain.usecase.GetHomeDashboardUseCase
@@ -31,7 +32,7 @@ class HomeViewModel(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val state: StateFlow<HomeUiState> = effectiveRange
+    private val dashboardState = effectiveRange
         .flatMapLatest { range ->
             val today = currentDate()
             val (dateFrom, dateTo) = range.dateRange(today)
@@ -53,16 +54,23 @@ class HomeViewModel(
                             netBalanceDeltaPct = summary.netBalanceDeltaPct,
                             isNetBalanceTrendPositive = summary.netBalanceDeltaPct?.let { it >= 0f },
                             categories = summary.categories,
+                            currencyCode = Currency.EUR.code,
                         )
                     }
                 }
                 .catch { emit(HomeUiState.Error(range)) }
         }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),
-            HomeUiState.Loading,
-        )
+
+    val state: StateFlow<HomeUiState> = combine(
+        dashboardState,
+        settingsRepo.observeCurrency(),
+    ) { uiState, currency ->
+        if (uiState is HomeUiState.Content) uiState.copy(currencyCode = currency.code) else uiState
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),
+        HomeUiState.Loading,
+    )
 
     fun selectRange(range: HomeRange) {
         userSelectedRange.value = range

@@ -24,5 +24,6 @@ sealed interface HomeUiState {
         val netBalanceDeltaPct: Float?,
         val isNetBalanceTrendPositive: Boolean?,
         val categories: List<CategorySpendingSummary>,
+        val currencyCode: String,
     ) : HomeUiState
 }

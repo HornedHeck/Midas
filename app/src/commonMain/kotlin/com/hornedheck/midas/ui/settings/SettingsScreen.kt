@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hornedheck.midas.appVersion
 import com.hornedheck.midas.domain.model.settings.AppTheme
+import com.hornedheck.midas.domain.model.settings.Currency
 import com.hornedheck.midas.domain.model.settings.DashboardRange
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.ui.navigation.BottomNavBar
@@ -37,12 +38,13 @@ import midas.app.generated.resources.home_range_1y
 import midas.app.generated.resources.home_range_3m
 import midas.app.generated.resources.home_range_6m
 import midas.app.generated.resources.screen_settings
+import midas.app.generated.resources.settings_label_currency
+import midas.app.generated.resources.settings_label_dashboard_range
+import midas.app.generated.resources.settings_label_theme
 import midas.app.generated.resources.settings_label_version
 import midas.app.generated.resources.settings_theme_auto
 import midas.app.generated.resources.settings_theme_dark
 import midas.app.generated.resources.settings_theme_light
-import midas.app.generated.resources.settings_label_theme
-import midas.app.generated.resources.settings_label_dashboard_range
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -55,6 +57,7 @@ fun SettingsScreen(
         state = state,
         onThemeSelected = viewModel::setTheme,
         onRangeSelected = viewModel::setDashboardRange,
+        onCurrencySelected = viewModel::setCurrency,
     )
 }
 
@@ -64,6 +67,7 @@ private fun SettingsScreen(
     state: SettingsState,
     onThemeSelected: (AppTheme) -> Unit,
     onRangeSelected: (DashboardRange) -> Unit,
+    onCurrencySelected: (Currency) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -91,6 +95,15 @@ private fun SettingsScreen(
                 options = DashboardRange.entries,
                 onSelected = onRangeSelected,
                 optionLabel = { it.label() },
+            )
+            HorizontalDivider(modifier = Modifier.padding(horizontal = AppDimens.spacing4x))
+
+            SettingsDropdownItem(
+                label = stringResource(Res.string.settings_label_currency),
+                selected = state.currency,
+                options = Currency.entries,
+                onSelected = onCurrencySelected,
+                optionLabel = { it.code },
             )
 
             Spacer(modifier = Modifier.weight(1f))

@@ -159,7 +159,6 @@
     <string name="home_delta_percentage"> %1$s%</string>
     <string name="home_empty_message">No transactions recorded for this period</string>
     <string name="home_error">Failed to load dashboard data</string>
-    <string name="home_currency_label">USD</string>
 
     <!-- Settings screen -->
     <string name="screen_settings">Settings</string>
@@ -168,6 +167,7 @@
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_label_theme">Theme</string>
     <string name="settings_label_dashboard_range">Default range</string>
+    <string name="settings_label_currency">Currency</string>
     <string name="settings_label_version">Version %1$s</string>
 
 </resources>

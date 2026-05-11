@@ -277,6 +277,7 @@ private fun TransactionListContent(
         if (state.activeChips.isNotEmpty()) {
             ActiveFiltersRow(
                 chips = state.activeChips,
+                currencyCode = state.currencyCode,
                 onDismissChip = onDismissChip,
             )
         }
@@ -339,6 +340,7 @@ private fun EmptyTransactionsContent(
         if (state.activeChips.isNotEmpty()) {
             ActiveFiltersRow(
                 chips = state.activeChips,
+                currencyCode = state.currencyCode,
                 onDismissChip = onDismissChip,
             )
         }
@@ -362,6 +364,7 @@ private fun ErrorTransactionsContent(
         if (state.activeChips.isNotEmpty()) {
             ActiveFiltersRow(
                 chips = state.activeChips,
+                currencyCode = state.currencyCode,
                 onDismissChip = onDismissChip,
             )
         }
@@ -380,6 +383,7 @@ private fun ErrorTransactionsContent(
 private fun ActiveFiltersRow(
     modifier: Modifier = Modifier,
     chips: List<FilterChipKey>,
+    currencyCode: String,
     onDismissChip: (FilterChipKey) -> Unit,
 ) {
     FlowRow(
@@ -393,7 +397,7 @@ private fun ActiveFiltersRow(
             FilterChip(
                 selected = true,
                 onClick = { onDismissChip(chip) },
-                label = { Text(chip.label()) },
+                label = { Text(chip.label(currencyCode)) },
                 leadingIcon = {
                     if (chip is FilterChipKey.Category) {
                         ColorDot(
@@ -415,17 +419,17 @@ private fun ActiveFiltersRow(
 }
 
 @Composable
-private fun FilterChipKey.label(): String = when (this) {
+private fun FilterChipKey.label(currencyCode: String): String = when (this) {
     is FilterChipKey.Type -> stringResource(type.label)
     is FilterChipKey.DateFrom -> stringResource(Res.string.filter_chip_date_after, date.format())
     is FilterChipKey.DateTo -> stringResource(Res.string.filter_chip_date_before, date.format())
     is FilterChipKey.AmountFrom -> stringResource(
         Res.string.filter_chip_amount_at_least,
-        formatAbsAmount(cents, withCurrency = true)
+        formatAbsAmount(cents, currencyCode)
     )
     is FilterChipKey.AmountTo -> stringResource(
         Res.string.filter_chip_amount_at_most,
-        formatAbsAmount(cents, withCurrency = true)
+        formatAbsAmount(cents, currencyCode)
     )
     is FilterChipKey.Category -> name ?: stringResource(Res.string.hint_uncategorized)
 }

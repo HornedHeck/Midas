@@ -46,7 +46,7 @@ fun LocalDate?.formatLong(): String {
 }
 
 @Suppress("MagicNumber")
-fun formatAmount(amountCents: Long, withCurrency: Boolean = false): String {
+fun formatAmount(amountCents: Long, currencyCode: String? = null): String {
     val isExpense = amountCents < 0
     val absAmount = abs(amountCents)
     val dollars = absAmount / 100
@@ -56,12 +56,12 @@ fun formatAmount(amountCents: Long, withCurrency: Boolean = false): String {
         append(dollars)
         append('.')
         append(cents)
-        if (withCurrency)
-            append(" USD")
+        if (currencyCode != null)
+            append(" $currencyCode")
     }
 }
 
 @Suppress("MagicNumber")
-fun formatAbsAmount(amountCents: Long, withCurrency: Boolean = false): String {
-    return formatAmount(abs(amountCents), withCurrency)
+fun formatAbsAmount(amountCents: Long, currencyCode: String? = null): String {
+    return formatAmount(abs(amountCents), currencyCode)
 }

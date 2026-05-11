@@ -1,5 +1,6 @@
 package com.hornedheck.midas.ui.transaction.list
 
+import com.hornedheck.midas.domain.model.settings.Currency
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.StringResource
 
@@ -13,27 +14,32 @@ import midas.app.generated.resources.filter_type_income
 
 sealed interface TransactionListState {
     val search: TransactionListSearchUi
+    val currencyCode: String
 
     data class Loading(
         override val search: TransactionListSearchUi = TransactionListSearchUi(),
+        override val currencyCode: String = Currency.EUR.code,
     ) : TransactionListState
 
     data class Empty(
         val reason: TransactionListEmptyReason = TransactionListEmptyReason.None,
         val activeChips: List<FilterChipKey> = emptyList(),
         override val search: TransactionListSearchUi = TransactionListSearchUi(),
+        override val currencyCode: String = Currency.EUR.code,
     ) : TransactionListState
 
     data class Content(
         val groups: List<TransactionGroup>,
         val activeChips: List<FilterChipKey>,
         override val search: TransactionListSearchUi = TransactionListSearchUi(),
+        override val currencyCode: String = Currency.EUR.code,
     ) : TransactionListState
 
     data class Error(
         val message: String,
         val activeChips: List<FilterChipKey> = emptyList(),
         override val search: TransactionListSearchUi = TransactionListSearchUi(),
+        override val currencyCode: String = Currency.EUR.code,
     ) : TransactionListState
 }
 

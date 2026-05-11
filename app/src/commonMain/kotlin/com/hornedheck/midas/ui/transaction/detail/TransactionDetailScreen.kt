@@ -148,6 +148,7 @@ private fun TransactionDetailContent(state: TransactionDetailState.Content) {
         AmountHeader(
             amountCents = state.amountCents,
             isExpense = state.isExpense,
+            currencyCode = state.currencyCode,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = AppDimens.spacing4x),
@@ -188,6 +189,7 @@ private fun TransactionDetailContent(state: TransactionDetailState.Content) {
 private fun AmountHeader(
     amountCents: Long,
     isExpense: Boolean,
+    currencyCode: String,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -196,7 +198,7 @@ private fun AmountHeader(
         verticalArrangement = Arrangement.spacedBy(AppDimens.spacing3x),
     ) {
         Text(
-            text = formatAmount(amountCents, true),
+            text = formatAmount(amountCents, currencyCode),
             style = MaterialTheme.typography.displayMedium,
             color = if (isExpense) MidasColor.Expense else MidasColor.Income,
         )
