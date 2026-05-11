@@ -2,6 +2,8 @@ package com.hornedheck.midas.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hornedheck.midas.domain.model.settings.DashboardRange
+import com.hornedheck.midas.domain.repository.ISettingsRepo
 import com.hornedheck.midas.domain.usecase.GetHomeDashboardUseCase
 import com.hornedheck.midas.util.SUBSCRIPTION_TIMEOUT
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -9,16 +11,27 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class HomeViewModel(private val getHomeDashboard: GetHomeDashboardUseCase) : ViewModel() {
+class HomeViewModel(
+    private val getHomeDashboard: GetHomeDashboardUseCase,
+    private val settingsRepo: ISettingsRepo,
+) : ViewModel() {
 
-    private val selectedRange = MutableStateFlow(HomeRange.THREE_MONTHS)
+    private val userSelectedRange = MutableStateFlow<HomeRange?>(null)
+
+    private val effectiveRange = combine(
+        userSelectedRange,
+        settingsRepo.observeDashboardRange(),
+    ) { userRange, settingsRange ->
+        userRange ?: settingsRange.toHomeRange()
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val state: StateFlow<HomeUiState> = selectedRange
+    val state: StateFlow<HomeUiState> = effectiveRange
         .flatMapLatest { range ->
             val today = currentDate()
             val (dateFrom, dateTo) = range.dateRange(today)
@@ -33,9 +46,12 @@ class HomeViewModel(private val getHomeDashboard: GetHomeDashboardUseCase) : Vie
                             incomeCents = summary.incomeCents,
                             expensesCents = summary.expensesCents,
                             netBalanceCents = summary.netBalanceCents,
-                            incomeDelta = summary.incomeDelta,
-                            expensesDelta = summary.expensesDelta,
-                            netBalanceDelta = summary.netBalanceDelta,
+                            incomeDeltaPct = summary.incomeDeltaPct,
+                            isIncomeTrendPositive = summary.incomeDeltaPct?.let { it >= 0f },
+                            expensesDeltaPct = summary.expensesDeltaPct,
+                            isExpensesTrendPositive = summary.expensesDeltaPct?.let { it <= 0f },
+                            netBalanceDeltaPct = summary.netBalanceDeltaPct,
+                            isNetBalanceTrendPositive = summary.netBalanceDeltaPct?.let { it >= 0f },
                             categories = summary.categories,
                         )
                     }
@@ -49,6 +65,13 @@ class HomeViewModel(private val getHomeDashboard: GetHomeDashboardUseCase) : Vie
         )
 
     fun selectRange(range: HomeRange) {
-        selectedRange.value = range
+        userSelectedRange.value = range
     }
+}
+
+private fun DashboardRange.toHomeRange(): HomeRange = when (this) {
+    DashboardRange.ONE_MONTH -> HomeRange.ONE_MONTH
+    DashboardRange.THREE_MONTHS -> HomeRange.THREE_MONTHS
+    DashboardRange.SIX_MONTHS -> HomeRange.SIX_MONTHS
+    DashboardRange.ONE_YEAR -> HomeRange.ONE_YEAR
 }

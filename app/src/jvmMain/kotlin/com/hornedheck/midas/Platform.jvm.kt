@@ -8,3 +8,7 @@ class JVMPlatform: Platform {
 
 actual fun getPlatform(): Platform = JVMPlatform()
 
+actual val appVersion: String = "1.0"
+
+actual val isSystemDarkModeSupported: Boolean = false
+

@@ -9,6 +9,8 @@ import com.hornedheck.midas.ui.category.list.CategoriesListScreen
 import com.hornedheck.midas.ui.category.list.CategoriesListViewModel
 import com.hornedheck.midas.ui.home.HomeScreen
 import com.hornedheck.midas.ui.home.HomeViewModel
+import com.hornedheck.midas.ui.settings.SettingsScreen
+import com.hornedheck.midas.ui.settings.SettingsViewModel
 import com.hornedheck.midas.ui.transaction.Transaction
 import com.hornedheck.midas.ui.transaction.list.TransactionListScreen
 import com.hornedheck.midas.ui.transaction.list.TransactionListViewModel
@@ -94,8 +96,9 @@ val mainModule = module {
             onRulesClick = { backStack.add(Category.RulesList) },
         )
     }
+    viewModel<SettingsViewModel>()
     navigation<Main.Settings> {
-        /* View Here */
+        SettingsScreen()
     }
 }
 

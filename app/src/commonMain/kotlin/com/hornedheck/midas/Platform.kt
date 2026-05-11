@@ -6,3 +6,8 @@ interface Platform {
 }
 
 expect fun getPlatform(): Platform
+
+expect val appVersion: String
+
+expect val isSystemDarkModeSupported: Boolean
+

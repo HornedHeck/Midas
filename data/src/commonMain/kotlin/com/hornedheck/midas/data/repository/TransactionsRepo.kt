@@ -12,7 +12,6 @@ import com.hornedheck.midas.domain.model.transaction.TransactionCategoryUpdate
 import com.hornedheck.midas.domain.model.transaction.TransactionDetails
 import com.hornedheck.midas.domain.model.transaction.TransactionFilter
 import com.hornedheck.midas.domain.model.transaction.TransactionForApply
-import com.hornedheck.midas.domain.model.dashboard.TransactionSummary
 import com.hornedheck.midas.domain.model.transaction.TransactionType
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.flow.Flow
@@ -64,7 +63,7 @@ class TransactionsRepo(
     ): Flow<HomeDashboardData> {
         val currentSummaryFlow = db.entryQueries
             .selectSummary(dateFrom, dateTo) { income, expense ->
-                TransactionSummary(income, expense)
+                income to expense
             }
             .asFlow()
             .mapToOne(ioContext)
@@ -72,7 +71,7 @@ class TransactionsRepo(
 
         val previousSummaryFlow = db.entryQueries
             .selectSummary(prevFrom, prevTo) { income, expense ->
-                TransactionSummary(income, expense)
+                income to expense
             }
             .asFlow()
             .mapToOne(ioContext)
@@ -87,7 +86,13 @@ class TransactionsRepo(
             .distinctUntilChanged()
 
         return combine(currentSummaryFlow, previousSummaryFlow, breakdownFlow) { current, previous, breakdown ->
-            HomeDashboardData(current, previous, breakdown)
+            HomeDashboardData(
+                currentIncomeCents = current.first,
+                currentExpensesCents = current.second,
+                previousIncomeCents = previous.first,
+                previousExpensesCents = previous.second,
+                breakdown = breakdown,
+            )
         }
     }
 

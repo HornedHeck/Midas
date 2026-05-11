@@ -4,10 +4,12 @@ import com.hornedheck.midas.data.db.dataStoreModule
 import com.hornedheck.midas.data.db.dbModule
 import com.hornedheck.midas.data.repository.CategoriesRepo
 import com.hornedheck.midas.data.repository.RulesRepo
+import com.hornedheck.midas.data.repository.SettingsRepo
 import com.hornedheck.midas.data.repository.TransactionsRepo
 import com.hornedheck.midas.domain.repository.ICategoriesRepo
 import com.hornedheck.midas.domain.repository.IRuleMatcher
 import com.hornedheck.midas.domain.repository.IRulesRepo
+import com.hornedheck.midas.domain.repository.ISettingsRepo
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import com.hornedheck.midas.domain.repository.RuleMatcherImpl
 import com.hornedheck.midas.domain.usecase.ApplyRulesUseCase
@@ -25,6 +27,7 @@ val dataModule = module {
 
     single<CoroutineContext> { create(::createDispatcher) }
 
+    single<SettingsRepo>() bind ISettingsRepo::class
     single<TransactionsRepo>() bind ITransactionsRepo::class
     single<CategoriesRepo>() bind ICategoriesRepo::class
     single<RulesRepo>() bind IRulesRepo::class

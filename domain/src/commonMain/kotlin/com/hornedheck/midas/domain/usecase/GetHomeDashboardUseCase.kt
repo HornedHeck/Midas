@@ -4,8 +4,6 @@ import com.hornedheck.midas.domain.model.dashboard.CategorySpending
 import com.hornedheck.midas.domain.model.dashboard.CategorySpendingSummary
 import com.hornedheck.midas.domain.model.dashboard.HomeDashboardData
 import com.hornedheck.midas.domain.model.dashboard.HomeDashboardSummary
-import com.hornedheck.midas.domain.model.dashboard.TrendDelta
-import com.hornedheck.midas.domain.model.dashboard.TrendDirection
 import com.hornedheck.midas.domain.repository.ITransactionsRepo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -27,21 +25,21 @@ class GetHomeDashboardUseCase(private val repo: ITransactionsRepo) {
             .map { it.toSummary() }
 
     private fun HomeDashboardData.toSummary(): HomeDashboardSummary {
-        val netCurrent = current.incomeCents - current.expensesCents
-        val netPrevious = previous.incomeCents - previous.expensesCents
+        val netCurrent = currentIncomeCents - currentExpensesCents
+        val netPrevious = previousIncomeCents - previousExpensesCents
         val totalExpenses = breakdown.sumOf { it.totalCents }
 
         val processedCategories = groupCategories(breakdown, totalExpenses)
 
         return HomeDashboardSummary(
-            incomeCents = current.incomeCents,
-            expensesCents = current.expensesCents,
+            incomeCents = currentIncomeCents,
+            expensesCents = currentExpensesCents,
             netBalanceCents = netCurrent,
-            incomeDelta = computeDelta(current.incomeCents, previous.incomeCents, upIsGood = true),
-            expensesDelta = computeDelta(current.expensesCents, previous.expensesCents, upIsGood = false),
-            netBalanceDelta = computeDelta(netCurrent, netPrevious, upIsGood = true),
+            incomeDeltaPct = computeDelta(currentIncomeCents, previousIncomeCents),
+            expensesDeltaPct = computeDelta(currentExpensesCents, previousExpensesCents),
+            netBalanceDeltaPct = computeDelta(netCurrent, netPrevious),
             categories = processedCategories,
-            isEmpty = current.incomeCents == 0L && current.expensesCents == 0L && breakdown.isEmpty(),
+            isEmpty = currentIncomeCents == 0L && currentExpensesCents == 0L && breakdown.isEmpty(),
         )
     }
 
@@ -77,14 +75,8 @@ class GetHomeDashboardUseCase(private val repo: ITransactionsRepo) {
         percentage = calculatePercentage(totalCents, totalExpenses),
     )
 
-    private fun computeDelta(current: Long, previous: Long, upIsGood: Boolean): TrendDelta? {
+    private fun computeDelta(current: Long, previous: Long): Float? {
         if (previous == 0L) return null
-        val pct = (current - previous).toFloat() / abs(previous).toFloat() * PercentageMultiplier
-        val direction = if (pct >= 0f) {
-            if (upIsGood) TrendDirection.POSITIVE else TrendDirection.NEGATIVE
-        } else {
-            if (upIsGood) TrendDirection.NEGATIVE else TrendDirection.POSITIVE
-        }
-        return TrendDelta(pct, direction)
+        return (current - previous).toFloat() / abs(previous).toFloat() * PercentageMultiplier
     }
 }

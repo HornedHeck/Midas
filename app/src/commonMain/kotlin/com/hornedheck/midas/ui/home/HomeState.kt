@@ -3,7 +3,6 @@
 package com.hornedheck.midas.ui.home
 
 import com.hornedheck.midas.domain.model.dashboard.CategorySpendingSummary
-import com.hornedheck.midas.domain.model.dashboard.TrendDelta
 
 sealed interface HomeUiState {
 
@@ -18,9 +17,12 @@ sealed interface HomeUiState {
         val incomeCents: Long,
         val expensesCents: Long,
         val netBalanceCents: Long,
-        val incomeDelta: TrendDelta?,
-        val expensesDelta: TrendDelta?,
-        val netBalanceDelta: TrendDelta?,
+        val incomeDeltaPct: Float?,
+        val isIncomeTrendPositive: Boolean?,
+        val expensesDeltaPct: Float?,
+        val isExpensesTrendPositive: Boolean?,
+        val netBalanceDeltaPct: Float?,
+        val isNetBalanceTrendPositive: Boolean?,
         val categories: List<CategorySpendingSummary>,
     ) : HomeUiState
 }

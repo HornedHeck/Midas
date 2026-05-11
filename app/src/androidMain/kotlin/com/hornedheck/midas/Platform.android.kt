@@ -10,3 +10,7 @@ class AndroidPlatform : Platform {
 
 actual fun getPlatform(): Platform = AndroidPlatform()
 
+actual val appVersion: String = BuildConfig.VERSION_NAME
+
+actual val isSystemDarkModeSupported: Boolean = true
+

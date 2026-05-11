@@ -46,8 +46,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hornedheck.midas.domain.model.dashboard.CategorySpendingSummary
-import com.hornedheck.midas.domain.model.dashboard.TrendDelta
-import com.hornedheck.midas.domain.model.dashboard.TrendDirection
 import com.hornedheck.midas.theme.AppDimens
 import com.hornedheck.midas.theme.MidasColor
 import com.hornedheck.midas.ui.components.ColorDot
@@ -152,7 +150,7 @@ fun HomeScreen(
 private fun HomeEmptyState(
     state: HomeUiState.Empty,
     onRangeSelected: (HomeRange) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -178,7 +176,7 @@ private fun HomeContent(
     onRangeSelected: (HomeRange) -> Unit,
     onCategoryClick: (categoryId: Long?, categoryName: String?, dateFrom: LocalDate, dateTo: LocalDate) -> Unit,
     fabSafeBottomSpacing: Dp,
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
 ) {
     val (dateFrom, dateTo) = remember(state.selectedRange) { state.selectedRange.dateRange() }
 
@@ -197,9 +195,12 @@ private fun HomeContent(
                 incomeCents = state.incomeCents,
                 expensesCents = state.expensesCents,
                 netBalanceCents = state.netBalanceCents,
-                incomeDelta = state.incomeDelta,
-                expensesDelta = state.expensesDelta,
-                netBalanceDelta = state.netBalanceDelta,
+                incomeDelta = state.incomeDeltaPct,
+                isIncomeTrendPositive = state.isIncomeTrendPositive,
+                expensesDelta = state.expensesDeltaPct,
+                isExpensesTrendPositive = state.isExpensesTrendPositive,
+                netBalanceDelta = state.netBalanceDeltaPct,
+                isNetBalanceTrendPositive = state.isNetBalanceTrendPositive,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = AppDimens.spacing4x),
@@ -289,10 +290,13 @@ private fun SummaryCard(
     incomeCents: Long,
     expensesCents: Long,
     netBalanceCents: Long,
-    incomeDelta: TrendDelta?,
-    expensesDelta: TrendDelta?,
-    netBalanceDelta: TrendDelta?,
-    modifier: Modifier = Modifier,
+    incomeDelta: Float?,
+    isIncomeTrendPositive: Boolean?,
+    expensesDelta: Float?,
+    isExpensesTrendPositive: Boolean?,
+    netBalanceDelta: Float?,
+    isNetBalanceTrendPositive: Boolean?,
+    modifier: Modifier,
 ) {
     Card(modifier = modifier) {
         Column(modifier = Modifier.padding(AppDimens.spacing3x)) {
@@ -305,19 +309,22 @@ private fun SummaryCard(
                 SummaryColumn(
                     label = stringResource(Res.string.home_label_income),
                     amountCents = incomeCents,
-                    delta = incomeDelta,
+                    deltaPct = incomeDelta,
+                    isTrendPositive = isIncomeTrendPositive,
                     modifier = Modifier.weight(1f),
                 )
                 SummaryColumn(
                     label = stringResource(Res.string.home_label_expenses),
                     amountCents = expensesCents,
-                    delta = expensesDelta,
+                    deltaPct = expensesDelta,
+                    isTrendPositive = isExpensesTrendPositive,
                     modifier = Modifier.weight(1f),
                 )
                 SummaryColumn(
                     label = stringResource(Res.string.home_label_balance),
                     amountCents = netBalanceCents,
-                    delta = netBalanceDelta,
+                    deltaPct = netBalanceDelta,
+                    isTrendPositive = isNetBalanceTrendPositive,
                     showSign = true,
                     modifier = Modifier.weight(1f),
                 )
@@ -330,7 +337,8 @@ private fun SummaryCard(
 private fun SummaryColumn(
     label: String,
     amountCents: Long,
-    delta: TrendDelta?,
+    deltaPct: Float?,
+    isTrendPositive: Boolean?,
     modifier: Modifier = Modifier,
     showSign: Boolean = false,
 ) {
@@ -345,26 +353,25 @@ private fun SummaryColumn(
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
         )
-        DeltaRow(delta = delta)
+        DeltaRow(deltaPct = deltaPct, isTrendPositive = isTrendPositive)
     }
 }
 
 @Composable
-private fun DeltaRow(delta: TrendDelta?, modifier: Modifier = Modifier) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+private fun DeltaRow(deltaPct: Float?, isTrendPositive: Boolean?) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = stringResource(Res.string.home_currency_label),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        if (delta != null) {
-            val color =
-                if (delta.direction == TrendDirection.POSITIVE) MidasColor.Income else MidasColor.Expense
-            val sign = if (delta.percentage >= 0f) "+" else "-"
+        if (deltaPct != null && isTrendPositive != null) {
+            val color = if (isTrendPositive) MidasColor.Income else MidasColor.Expense
+            val sign = if (deltaPct >= 0f) "+" else "-"
             Text(
                 text = stringResource(
                     Res.string.home_delta_percentage,
-                    "$sign${kotlin.math.abs(delta.percentage).toInt()}"
+                    "$sign${kotlin.math.abs(deltaPct).toInt()}"
                 ),
                 style = MaterialTheme.typography.labelSmall,
                 color = color,
@@ -377,7 +384,7 @@ private fun DeltaRow(delta: TrendDelta?, modifier: Modifier = Modifier) {
 @Composable
 private fun DonutChart(
     categories: List<CategorySpendingSummary>,
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
 ) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         PieChart(
@@ -408,7 +415,7 @@ private fun DonutChart(
 private fun CategoryRow(
     category: CategorySpendingSummary,
     onClick: (() -> Unit)?,
-    modifier: Modifier = Modifier,
+    modifier: Modifier,
 ) {
     Row(
         modifier = modifier
