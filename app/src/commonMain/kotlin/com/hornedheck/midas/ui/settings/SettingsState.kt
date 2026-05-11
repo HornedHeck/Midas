@@ -8,4 +8,6 @@ data class SettingsState(
     val selectedTheme: AppTheme,
     val dashboardRange: DashboardRange,
     val currency: Currency,
+    val clearDataStatus: ClearDataStatus = ClearDataStatus.Idle,
+    val clearTransactionsStatus: ClearDataStatus = ClearDataStatus.Idle,
 )

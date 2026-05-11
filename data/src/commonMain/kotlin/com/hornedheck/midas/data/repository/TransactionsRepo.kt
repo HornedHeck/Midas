@@ -206,6 +206,12 @@ class TransactionsRepo(
         }
     }
 
+    override suspend fun deleteAll() {
+        withContext(ioContext) {
+            db.entryQueries.deleteAll()
+        }
+    }
+
     private data class PreparedTransactionsFilter(
         val includeExpenses: Long,
         val includeIncome: Long,

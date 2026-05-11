@@ -12,4 +12,5 @@ interface IRulesRepo {
     suspend fun updateRule(id: Long, ruleType: RuleType, value: String, categoryId: Long?)
     suspend fun deleteRule(id: Long)
     suspend fun reorderRules(orderedIds: List<Long>)
+    suspend fun clearAll()
 }

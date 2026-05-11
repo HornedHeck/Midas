@@ -87,6 +87,10 @@ class RulesRepo(
         }
     }
 
+    override suspend fun clearAll() {
+        dataStore.edit { it.remove(RULES_KEY) }
+    }
+
     companion object {
         private val RULES_KEY = stringPreferencesKey("rules")
     }

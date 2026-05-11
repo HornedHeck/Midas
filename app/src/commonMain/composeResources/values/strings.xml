@@ -169,5 +169,13 @@
     <string name="settings_label_dashboard_range">Default range</string>
     <string name="settings_label_currency">Currency</string>
     <string name="settings_label_version">Version %1$s</string>
+    <string name="settings_clear_data">Clear All Data</string>
+    <string name="settings_clear_transactions">Clear All Transactions</string>
+    <string name="dialog_clear_data_title">Clear All Data</string>
+    <string name="dialog_clear_data_body">All transactions, categories, and rules will be permanently deleted. This action cannot be undone.</string>
+    <string name="error_clear_data_failed">Failed to clear data. Please try again.</string>
+    <string name="dialog_clear_transactions_title">Clear All Transactions</string>
+    <string name="dialog_clear_transactions_body">All transactions will be permanently deleted. This action cannot be undone.</string>
+    <string name="error_clear_transactions_failed">Failed to clear transactions. Please try again.</string>
 
 </resources>

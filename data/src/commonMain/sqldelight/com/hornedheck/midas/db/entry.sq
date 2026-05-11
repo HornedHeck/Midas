@@ -109,6 +109,9 @@ SET category_id = :categoryId,
     is_manual = :isManual
 WHERE id = :id;
 
+deleteAll:
+DELETE FROM entry;
+
 selectSummary:
 SELECT
     COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0)  AS income_cents,

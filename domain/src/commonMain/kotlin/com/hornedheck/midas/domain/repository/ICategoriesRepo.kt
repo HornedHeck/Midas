@@ -9,4 +9,5 @@ interface ICategoriesRepo {
     suspend fun addCategory(name: String, color: Int): Category
     suspend fun updateCategory(id: Long, name: String, color: Int)
     suspend fun deleteCategory(id: Long): Int
+    suspend fun deleteAll()
 }

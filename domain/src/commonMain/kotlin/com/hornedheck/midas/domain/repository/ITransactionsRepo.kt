@@ -39,4 +39,6 @@ interface ITransactionsRepo {
     suspend fun updateTransactionCategory(id: Long, categoryId: Long?, categorySource: CategorySource)
 
     suspend fun updateTransactionCategories(updates: List<TransactionCategoryUpdate>)
+
+    suspend fun deleteAll()
 }

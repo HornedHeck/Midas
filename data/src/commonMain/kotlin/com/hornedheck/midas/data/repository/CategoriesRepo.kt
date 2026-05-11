@@ -55,4 +55,10 @@ class CategoriesRepo(
         }
         return affectedRules.size
     }
+
+    override suspend fun deleteAll() {
+        withContext(ioContext) {
+            db.categoryQueries.deleteAll()
+        }
+    }
 }
