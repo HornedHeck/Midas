@@ -27,4 +27,30 @@ subprojects {
         parallel = true
         source.setFrom(files(kotlinSourceDirs))
     }
+
+    afterEvaluate {
+        // Use a nested afterEvaluate so our source override runs AFTER the Kotlin/detekt plugin's
+        // afterEvaluate (which wires compilation sources — including generated files — into the tasks).
+        afterEvaluate {
+            // Rules requiring type resolution (e.g. UnusedImport) are only active in
+            // compilation-based detekt tasks. Wire those into the aggregate `detekt` task.
+            val allDetektTasks = tasks
+                .withType(dev.detekt.gradle.Detekt::class.java)
+                .matching { it.name != "detekt" }
+
+            val typeResolutionTasks = allDetektTasks.matching { !it.classpath.isEmpty }
+
+            allDetektTasks.configureEach {
+                config.setFrom(file("${rootProject.projectDir}/misc/detekt.yml"))
+                buildUponDefaultConfig = true
+                // Restrict source to hand-written Kotlin files under src/ — excludes all generated
+                // code under build/. FileTree is configuration-cache-safe.
+                setSource(project.fileTree("src") { include("**/*.kt") })
+            }
+
+            tasks.named("detekt").configure {
+                dependsOn(typeResolutionTasks)
+            }
+        }
+    }
 }

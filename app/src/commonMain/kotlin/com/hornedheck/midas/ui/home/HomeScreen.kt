@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -294,6 +293,7 @@ private fun RangeSelector(
 @Composable
 private fun HomeRange.text(): String = stringResource(label)
 
+@Suppress("LongParameterList")
 @Composable
 private fun SummaryCard(
     incomeCents: Long,
@@ -425,6 +425,7 @@ private fun DonutChart(
     }
 }
 
+@Suppress("ImplicitDefaultLocale")
 @Composable
 private fun CategoryRow(
     category: CategorySpendingSummary,

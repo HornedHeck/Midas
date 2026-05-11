@@ -1,8 +1,6 @@
 package com.hornedheck.midas.domain.repository
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -11,9 +9,10 @@ import kotlin.coroutines.CoroutineContext
 
 class RuleMatcherImpl(
     rulesRepo: IRulesRepo,
+    coroutineContext: CoroutineContext,
 ) : IRuleMatcher {
 
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(coroutineContext)
 
     private val ruleSet: StateFlow<List<Rule>> = rulesRepo.getRules()
         .map { rules -> rules.map { it.toRule() } }

@@ -72,6 +72,7 @@ fun SettingsScreen(
     )
 }
 
+@Suppress("LongParameterList")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SettingsScreen(

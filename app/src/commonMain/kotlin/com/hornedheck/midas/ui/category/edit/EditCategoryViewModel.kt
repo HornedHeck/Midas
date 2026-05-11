@@ -65,9 +65,9 @@ class EditCategoryViewModel(
                 } else {
                     repo.updateCategory(id, name, color)
                 }
-            }.onSuccess {
+            }.onSuccess { _ ->
                 _state.update { it.copy(status = EditCategoryStatus.Success) }
-            }.onFailure {
+            }.onFailure { _ ->
                 _state.update { it.copy(status = EditCategoryStatus.Error(Res.string.error_save_category_failed)) }
             }
         }

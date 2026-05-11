@@ -21,7 +21,7 @@ class CategoriesListViewModel(
                 categories.map { CategoryUiItem(it.id, it.name, it.color) }
             )
         }
-        .catch { e -> emit(CategoriesListState.Error(e.message ?: "")) }
+        .catch { e -> emit(CategoriesListState.Error(e.message.orEmpty())) }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),

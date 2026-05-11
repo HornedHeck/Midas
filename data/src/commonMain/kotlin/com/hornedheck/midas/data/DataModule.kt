@@ -15,7 +15,6 @@ import com.hornedheck.midas.domain.repository.RuleMatcherImpl
 import com.hornedheck.midas.domain.usecase.ApplyRulesUseCase
 import com.hornedheck.midas.domain.usecase.GetHomeDashboardUseCase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.plugin.module.dsl.create
@@ -36,5 +35,6 @@ val dataModule = module {
     single<GetHomeDashboardUseCase>()
 }
 
+@Suppress("InjectDispatcher")
 fun createDispatcher() : CoroutineContext = Dispatchers.IO
 

@@ -78,7 +78,7 @@ class TransactionListViewModel(
                     },
                     onFailure = { error ->
                         TransactionListState.Error(
-                            message = error.message ?: "",
+                            message = error.message.orEmpty(),
                             activeChips = filter?.toChips(categories).orEmpty(),
                             search = search,
                             currencyCode = currencyCode,

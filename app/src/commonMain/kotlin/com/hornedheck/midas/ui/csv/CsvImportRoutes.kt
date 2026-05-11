@@ -6,7 +6,6 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclassesOfSealed
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation

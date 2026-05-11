@@ -62,7 +62,7 @@ class TransactionFilterViewModel(
             dateFrom = dateFrom,
             dateTo = dateTo,
             selectedQuickRange = resolveQuickRange(dateFrom = dateFrom, dateTo = dateTo),
-            selectedCategoryIds = current?.categoryIds ?: emptySet(),
+            selectedCategoryIds = current?.categoryIds.orEmpty(),
         )
     }
 
@@ -153,16 +153,16 @@ class TransactionFilterViewModel(
     }
 }
 
-@Suppress("MagicNumber", "ReturnCount")
+@Suppress("ReturnCount")
 private fun String.toAmountCents(): Long? {
     if (isEmpty()) return null
 
     val parts = split('.')
-    if (parts.size > 2) return null
+    if (parts.size > MaxAmountParts) return null
 
-    var amount = parts.first().toLong() * 100
-    if (parts.size == 2) {
-        amount += parts[1].padEnd(2, '0').toLong()
+    var amount = parts.first().toLong() * CentsPerWhole
+    if (parts.size == MaxAmountParts) {
+        amount += parts[1].padEnd(MaxFractionDigits, '0').toLong()
     }
     return amount
 }

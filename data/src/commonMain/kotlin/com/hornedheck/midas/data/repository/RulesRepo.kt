@@ -22,7 +22,7 @@ class RulesRepo(
 
     private val Flow<Preferences>.asRulesList: Flow<List<CategoryRuleDto>>
         get() = map { prefs ->
-            prefs[RULES_KEY]?.let { json.decodeFromString(it) } ?: emptyList()
+            prefs[RULES_KEY]?.let { json.decodeFromString<List<CategoryRuleDto>>(it) }.orEmpty()
         }
 
     override fun getRules(): Flow<List<CategoryRule>> =
@@ -38,7 +38,7 @@ class RulesRepo(
         if (categoryId == null) return
         dataStore.edit { prefs ->
             val current: List<CategoryRuleDto> =
-                prefs[RULES_KEY]?.let { json.decodeFromString(it) } ?: emptyList()
+                prefs[RULES_KEY]?.let { json.decodeFromString<List<CategoryRuleDto>>(it) }.orEmpty()
             val newId = (current.maxOfOrNull { it.id } ?: 0L) + 1L
             val newPriority = (current.maxOfOrNull { it.priority } ?: -1) + 1
             val newRule = CategoryRuleDto(
@@ -56,7 +56,7 @@ class RulesRepo(
         if (categoryId == null) return
         dataStore.edit { prefs ->
             val current: List<CategoryRuleDto> =
-                prefs[RULES_KEY]?.let { json.decodeFromString(it) } ?: emptyList()
+                prefs[RULES_KEY]?.let { json.decodeFromString<List<CategoryRuleDto>>(it) }.orEmpty()
             val updated = current.map { rule ->
                 if (rule.id == id) rule.copy(ruleType = ruleType.name, value = value, categoryId = categoryId)
                 else rule
@@ -68,7 +68,7 @@ class RulesRepo(
     override suspend fun deleteRule(id: Long) {
         dataStore.edit { prefs ->
             val current: List<CategoryRuleDto> =
-                prefs[RULES_KEY]?.let { json.decodeFromString(it) } ?: emptyList()
+                prefs[RULES_KEY]?.let { json.decodeFromString<List<CategoryRuleDto>>(it) }.orEmpty()
             prefs[RULES_KEY] = json.encodeToString(current.filter { it.id != id })
         }
     }
@@ -76,7 +76,7 @@ class RulesRepo(
     override suspend fun reorderRules(orderedIds: List<Long>) {
         dataStore.edit { prefs ->
             val current: List<CategoryRuleDto> =
-                prefs[RULES_KEY]?.let { json.decodeFromString(it) } ?: emptyList()
+                prefs[RULES_KEY]?.let { json.decodeFromString<List<CategoryRuleDto>>(it) }.orEmpty()
             val idToRule = current.associateBy { it.id }
             val reordered = orderedIds.mapIndexedNotNull { index, id ->
                 idToRule[id]?.copy(priority = index)

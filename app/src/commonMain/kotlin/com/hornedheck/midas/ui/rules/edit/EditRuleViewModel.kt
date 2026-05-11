@@ -121,9 +121,9 @@ class EditRuleViewModel(
                         categoryId = form.selectedCategoryId,
                     )
                 }
-            }.onSuccess {
+            }.onSuccess { _ ->
                 _state.update { it.copy(status = EditRuleStatus.Success) }
-            }.onFailure {
+            }.onFailure { _ ->
                 _state.update { it.copy(status = EditRuleStatus.Error(Res.string.error_save_rule_failed)) }
             }
         }

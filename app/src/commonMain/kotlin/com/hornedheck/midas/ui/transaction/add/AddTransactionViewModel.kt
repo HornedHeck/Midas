@@ -162,9 +162,9 @@ class AddTransactionViewModel(
                     notes = notes,
                     categorySource = resolvedSource,
                 )
-            }.onSuccess {
+            }.onSuccess { _ ->
                 _state.update { it.copy(saveStatus = SaveStatus.Success) }
-            }.onFailure {
+            }.onFailure { _ ->
                 val errorRes = if (transactionId != null) {
                     Res.string.error_update_transaction_failed
                 } else {
