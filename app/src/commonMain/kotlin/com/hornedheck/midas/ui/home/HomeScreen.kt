@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -245,38 +246,46 @@ private fun RangeSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val prefix = stringResource(Res.string.home_range_prefix)
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
-        modifier = modifier,
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = AppDimens.spacing4x),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                .fillMaxWidth()
-                .padding(horizontal = AppDimens.spacing4x),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "$prefix ${selectedRange.text()}",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f),
-            )
-            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-        }
-        ExposedDropdownMenu(
+        Text(
+            text = prefix,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Spacer(Modifier.weight(1f))
+        ExposedDropdownMenuBox(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
+            onExpandedChange = { expanded = it },
         ) {
-            HomeRange.entries.forEach { range ->
-                DropdownMenuItem(
-                    text = { Text(range.text()) },
-                    onClick = {
-                        onRangeSelected(range)
-                        expanded = false
-                    },
-                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+            Row(
+                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = selectedRange.text(),
+                    style = MaterialTheme.typography.bodyMedium,
                 )
+                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+            }
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                matchAnchorWidth = false,
+            ) {
+                HomeRange.entries.forEach { range ->
+                    DropdownMenuItem(
+                        text = { Text(range.text()) },
+                        onClick = {
+                            onRangeSelected(range)
+                            expanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    )
+                }
             }
         }
     }

@@ -63,6 +63,7 @@ internal fun CategoryDropdown(
         ExposedDropdownMenu(
             expanded = expanded && enabled,
             onDismissRequest = { expanded = false },
+            matchAnchorWidth = false,
         ) {
             if (onAutoSelected != null && autoLabel != null) {
                 DropdownMenuItem(
