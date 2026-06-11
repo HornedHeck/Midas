@@ -1,8 +1,9 @@
-package com.hornedheck.midas
+package com.hornedheck.midas.android
 
 import android.app.Application
 import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
+import com.hornedheck.midas.initKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 

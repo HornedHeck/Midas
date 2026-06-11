@@ -2,15 +2,5 @@
 
 package com.hornedheck.midas
 
-import android.os.Build
-
-class AndroidPlatform : Platform {
-    override val name: String = "Android ${Build.VERSION.SDK_INT}"
-}
-
-actual fun getPlatform(): Platform = AndroidPlatform()
-
-actual val appVersion: String = BuildConfig.VERSION_NAME
-
 actual val isSystemDarkModeSupported: Boolean = true
 

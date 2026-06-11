@@ -4,17 +4,24 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.koin.compiler)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.buildkonfig)
 }
 
 kotlin {
-    androidTarget {
+    android {
+        namespace = "com.hornedheck.midas"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
+        androidResources {
+            enable = true
         }
     }
 
@@ -23,7 +30,6 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
-            implementation(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
             implementation(projects.midas.data)
@@ -77,40 +83,6 @@ kotlin {
     }
 }
 
-android {
-    namespace = "com.hornedheck.midas"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        applicationId = "com.hornedheck.midas"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    buildFeatures {
-        buildConfig = true
-    }
-}
-
-dependencies {
-    debugImplementation(libs.compose.uiTooling)
-}
-
 compose.desktop {
     application {
         mainClass = "com.hornedheck.midas.MainKt"
@@ -118,8 +90,19 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Rpm, TargetFormat.Deb)
             packageName = "com.hornedheck.midas"
-            packageVersion = "1.0.0"
+            packageVersion = libs.versions.app.version.get()
         }
+    }
+}
+
+buildkonfig {
+    packageName = "com.hornedheck.midas"
+    defaultConfigs {
+        buildConfigField(
+            com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING,
+            "APP_VERSION",
+            libs.versions.app.version.get()
+        )
     }
 }
 

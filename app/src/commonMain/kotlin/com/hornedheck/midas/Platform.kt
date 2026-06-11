@@ -4,9 +4,7 @@ interface Platform {
     val name: String
 }
 
-expect fun getPlatform(): Platform
-
-expect val appVersion: String
+val appVersion: String = BuildKonfig.APP_VERSION
 
 expect val isSystemDarkModeSupported: Boolean
 

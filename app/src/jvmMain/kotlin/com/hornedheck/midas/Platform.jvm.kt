@@ -2,13 +2,5 @@
 
 package com.hornedheck.midas
 
-class JVMPlatform: Platform {
-    override val name: String = "Java ${System.getProperty("java.version")}"
-}
-
-actual fun getPlatform(): Platform = JVMPlatform()
-
-actual val appVersion: String = "1.0"
-
 actual val isSystemDarkModeSupported: Boolean = false
 

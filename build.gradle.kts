@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.androidApplication) apply false
-    alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.composeHotReload) apply false
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
@@ -9,6 +8,7 @@ plugins {
     alias(libs.plugins.androidLint) apply false
     alias(libs.plugins.sqldelight) apply false
     alias(libs.plugins.kotlinSerialization) apply false
+    alias(libs.plugins.buildkonfig) apply false
     alias(libs.plugins.detekt)
 }
 
@@ -38,8 +38,6 @@ subprojects {
                 .withType(dev.detekt.gradle.Detekt::class.java)
                 .matching { it.name != "detekt" }
 
-            val typeResolutionTasks = allDetektTasks.matching { !it.classpath.isEmpty }
-
             allDetektTasks.configureEach {
                 config.setFrom(file("${rootProject.projectDir}/misc/detekt.yml"))
                 buildUponDefaultConfig = true
@@ -48,8 +46,15 @@ subprojects {
                 setSource(project.fileTree("src") { include("**/*.kt") })
             }
 
+            // Snapshot to names inside afterEvaluate to avoid ConcurrentModificationException
+            // when Gradle iterates a live TaskCollection during task graph calculation.
+            val typeResolutionTaskNames = allDetektTasks
+                .toList()
+                .filter { !it.classpath.isEmpty }
+                .map { it.name }
+
             tasks.named("detekt").configure {
-                dependsOn(typeResolutionTasks)
+                dependsOn(typeResolutionTaskNames.map { tasks.named(it) })
             }
         }
     }

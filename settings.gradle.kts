@@ -33,5 +33,6 @@ plugins {
 }
 
 include(":app")
+include(":androidApp")
 include(":domain")
 include(":data")
