@@ -178,4 +178,24 @@
     <string name="dialog_clear_transactions_body">All transactions will be permanently deleted. This action cannot be undone.</string>
     <string name="error_clear_transactions_failed">Failed to clear transactions. Please try again.</string>
 
+    <!-- App Lock -->
+    <string name="settings_app_lock">App Lock</string>
+    <string name="screen_app_lock">App Lock</string>
+    <string name="auth_pin_section">PIN</string>
+    <string name="auth_enable_pin">PIN Lock</string>
+    <string name="auth_change_pin">Change PIN</string>
+    <string name="auth_biometric_section">Biometric</string>
+    <string name="auth_enable_biometric">Unlock with biometrics</string>
+    <string name="auth_biometric_hardware_unavailable">No biometric hardware enrolled on this device</string>
+    <string name="auth_setup_pin_title">Set a PIN</string>
+    <string name="auth_setup_pin_confirm_title">Confirm PIN</string>
+    <string name="auth_setup_pin_mismatch">PINs do not match. Try again.</string>
+    <string name="auth_setup_pin_save">Save</string>
+    <string name="lock_title">Enter PIN</string>
+    <string name="lock_subtitle">Enter your PIN to unlock Midas</string>
+    <string name="lock_error">Incorrect PIN</string>
+    <string name="lock_use_pin">Use PIN</string>
+    <string name="lock_use_biometric">Use biometrics</string>
+    <string name="cd_pin_delete">Delete</string>
+
 </resources>

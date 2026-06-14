@@ -30,6 +30,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
+            implementation(libs.androidx.biometric)
         }
         commonMain.dependencies {
             implementation(projects.midas.data)

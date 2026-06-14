@@ -8,6 +8,7 @@ android-targetSdk = "37"
 # Libs
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.7.1"
+androidx-fragment = "1.8.6"
 androidx-core = "1.18.0"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.10.0"
@@ -31,6 +32,10 @@ detekt = "2.0.0-alpha.3"
 buildkonfig = "0.15.2"
 datastore = "1.1.2"
 app-version = "1.0.0"
+kotlincrypto-hash = "0.8.0"
+kotlincrypto-random = "0.6.0"
+androidx-biometric = "1.1.0"
+androidx-splashscreen = "1.2.0"
 
 
 [libraries]
@@ -86,6 +91,15 @@ datastore-preferences-core = { module = "androidx.datastore:datastore-preference
 
 #Charts
 koalaplot = { module = "io.github.koalaplot:koalaplot-core", version = "0.11.2" }
+
+#Crypto (PIN hashing)
+kotlincrypto-hash-bom = { module = "org.kotlincrypto.hash:bom", version.ref = "kotlincrypto-hash" }
+kotlincrypto-hash-sha2 = { module = "org.kotlincrypto.hash:sha2" }
+kotlincrypto-random-cryptoRand = { module = "org.kotlincrypto.random:crypto-rand", version.ref = "kotlincrypto-random" }
+
+#Biometric (Android)
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "androidx-biometric" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-splashscreen" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

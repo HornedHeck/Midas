@@ -2,9 +2,12 @@ package com.hornedheck.midas.ui.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -12,6 +15,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -47,6 +51,71 @@ internal fun SettingsDangerItem(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.error,
+        )
+    }
+}
+
+@Composable
+internal fun SettingsNavItem(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = AppDimens.spacing4x, vertical = AppDimens.spacing3x),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = label, style = MaterialTheme.typography.bodyLarge)
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+internal fun SettingsToggleItem(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    note: String? = null,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = AppDimens.spacing4x, vertical = AppDimens.spacing3x),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (enabled) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+            if (note != null) {
+                Text(
+                    text = note,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            enabled = enabled,
         )
     }
 }

@@ -58,6 +58,11 @@ kotlin {
                 // Serialization
                 implementation(libs.kotlinx.serialization.json)
 
+                // Crypto (PIN hashing)
+                implementation(project.dependencies.platform(libs.kotlincrypto.hash.bom))
+                implementation(libs.kotlincrypto.hash.sha2)
+                implementation(libs.kotlincrypto.random.cryptoRand)
+
                 // Domain
                 implementation(projects.midas.domain)
             }

@@ -43,6 +43,7 @@ import midas.app.generated.resources.home_range_1y
 import midas.app.generated.resources.home_range_3m
 import midas.app.generated.resources.home_range_6m
 import midas.app.generated.resources.screen_settings
+import midas.app.generated.resources.settings_app_lock
 import midas.app.generated.resources.settings_clear_data
 import midas.app.generated.resources.settings_clear_transactions
 import midas.app.generated.resources.settings_label_currency
@@ -57,6 +58,7 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun SettingsScreen(
+    onAppLockClick: () -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -65,6 +67,7 @@ fun SettingsScreen(
         onThemeSelected = viewModel::setTheme,
         onRangeSelected = viewModel::setDashboardRange,
         onCurrencySelected = viewModel::setCurrency,
+        onAppLockClick = onAppLockClick,
         onClearTransactions = viewModel::clearTransactions,
         onClearTransactionsStatusReset = viewModel::resetClearTransactionsStatus,
         onClearData = viewModel::clearAllData,
@@ -80,6 +83,7 @@ private fun SettingsScreen(
     onThemeSelected: (AppTheme) -> Unit,
     onRangeSelected: (DashboardRange) -> Unit,
     onCurrencySelected: (Currency) -> Unit,
+    onAppLockClick: () -> Unit,
     onClearTransactions: () -> Unit,
     onClearTransactionsStatusReset: () -> Unit,
     onClearData: () -> Unit,
@@ -112,6 +116,7 @@ private fun SettingsScreen(
             onThemeSelected = onThemeSelected,
             onRangeSelected = onRangeSelected,
             onCurrencySelected = onCurrencySelected,
+            onAppLockClick = onAppLockClick,
             onClearTransactionsClick = { showClearTransactionsDialog = true },
             onClearDataClick = { showClearDialog = true },
             modifier = Modifier.padding(innerPadding),
@@ -152,6 +157,7 @@ private fun SettingsContent(
     onThemeSelected: (AppTheme) -> Unit,
     onRangeSelected: (DashboardRange) -> Unit,
     onCurrencySelected: (Currency) -> Unit,
+    onAppLockClick: () -> Unit,
     onClearTransactionsClick: () -> Unit,
     onClearDataClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -183,6 +189,12 @@ private fun SettingsContent(
             options = Currency.entries,
             onSelected = onCurrencySelected,
             optionLabel = { it.code },
+        )
+        HorizontalDivider(modifier = Modifier.padding(horizontal = AppDimens.spacing4x))
+
+        SettingsNavItem(
+            label = stringResource(Res.string.settings_app_lock),
+            onClick = onAppLockClick,
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = AppDimens.spacing4x))
 

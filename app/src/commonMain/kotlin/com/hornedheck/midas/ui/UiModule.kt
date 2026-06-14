@@ -4,6 +4,7 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import com.hornedheck.midas.ui.auth.authModule
 import com.hornedheck.midas.ui.category.categoryModule
 import com.hornedheck.midas.ui.csv.csvImportModule
+import com.hornedheck.midas.ui.lock.lockModule
 import com.hornedheck.midas.ui.main.mainModule
 import com.hornedheck.midas.ui.transaction.transactionModule
 import kotlinx.serialization.modules.SerializersModule
@@ -14,6 +15,7 @@ import org.koin.plugin.module.dsl.create
 val uiModule = module {
     includes(
         authModule,
+        lockModule,
         mainModule,
         transactionModule,
         categoryModule,

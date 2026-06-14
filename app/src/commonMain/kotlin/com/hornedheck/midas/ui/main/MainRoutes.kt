@@ -9,6 +9,7 @@ import com.hornedheck.midas.ui.category.list.CategoriesListScreen
 import com.hornedheck.midas.ui.category.list.CategoriesListViewModel
 import com.hornedheck.midas.ui.home.HomeScreen
 import com.hornedheck.midas.ui.home.HomeViewModel
+import com.hornedheck.midas.ui.lock.AppLockSettingsScreen
 import com.hornedheck.midas.ui.settings.SettingsScreen
 import com.hornedheck.midas.ui.settings.SettingsViewModel
 import com.hornedheck.midas.ui.transaction.Transaction
@@ -43,6 +44,9 @@ sealed interface Main : NavKey {
 
     @Serializable
     data object Settings : Main
+
+    @Serializable
+    data object AppLockSettings : Main
 }
 
 val mainModule = module {
@@ -97,7 +101,16 @@ val mainModule = module {
     }
     viewModel<SettingsViewModel>()
     navigation<Main.Settings> {
-        SettingsScreen()
+        val backStack = LocalNavBackStack.current
+        SettingsScreen(
+            onAppLockClick = { backStack.add(Main.AppLockSettings) },
+        )
+    }
+    navigation<Main.AppLockSettings> {
+        val backStack = LocalNavBackStack.current
+        AppLockSettingsScreen(
+            onBack = { backStack.removeLastOrNull() },
+        )
     }
 }
 
